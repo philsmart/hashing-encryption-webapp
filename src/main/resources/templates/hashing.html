@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Token Challenge</title>
+<link th:href="@{/styles/style.css}" rel="stylesheet" />
+</head>
+<body>
+
+	<h1>Shall we play a game?</h1>
+
+	<div id="game-container">
+		<form th:action="@{/hash}" method="post">
+			<label for="message">Input Message:</label><input id="message"
+				name="message" th:value="${message}"/>
+				<p>
+				<label for="message">Input Script:</label><textarea id="script"
+                name="script" rows="25" cols="70" th:inline="text">[[${script}]]</textarea>
+                <button type="submit">Go</button>
+                </p>
+		</form>
+		Result: <span th:text="${result}" style="border:1px SOLID;padding:10px"></span>
+	</div>
+
+
+
+</body>
+</html>
