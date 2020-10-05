@@ -1,0 +1,13 @@
+@charset "UTF-8";
+
+h1 {
+	font-family: sans-serif;
+    font-size: 1.5em;
+    text-transform: uppercase;
+}
+
+#game-container {
+	border: 1px SOLID GREY;
+	padding:10px;
+	margin:10px;
+}
