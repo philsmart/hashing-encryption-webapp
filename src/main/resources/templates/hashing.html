@@ -9,18 +9,40 @@
 
 	<h1>Shall we play a game?</h1>
 
+
+	<div id="game-container">
+		<form th:action="@{/update-script}" method="post">
+			<label for="message">Input Script:</label>
+			<textarea id="script" name="script" rows="25" cols="70"
+				th:inline="text">[[${script}]]</textarea>
+			<button type="submit">Update</button>
+		</form>
+	</div>
+
 	<div id="game-container">
 		<form th:action="@{/hash}" method="post">
+
 			<label for="message">Input Message:</label><input id="message"
-				name="message" th:value="${message}"/>
-				<p>
-				<label for="message">Input Script:</label><textarea id="script"
-                name="script" rows="25" cols="70" th:inline="text">[[${script}]]</textarea>
-                <button type="submit">Go</button>
-                </p>
+				name="message" th:value="${message}" />
+			<p>
+
+				<button type="submit">Compute</button>
+			</p>
 		</form>
-		Result: <span th:text="${result}" style="border:1px SOLID;padding:10px"></span>
+		Result: <span th:text="${result}"
+			style="border: 1px SOLID; padding: 10px"></span>
 	</div>
+
+
+	<div id="game-container">
+		Compute for random input
+		<form th:action="@{/randomise}" method="post">
+		<label for="no-words">Number of random words</label><input id="no-of-words"
+                name="no-of-words"/>
+			<button type="submit">Compute</button>
+		</form>
+	</div>
+
 
 
 
