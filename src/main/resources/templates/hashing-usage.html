@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Token Challenge</title>
+<link th:href="@{/styles/style.css}" rel="stylesheet" />
+</head>
+<body>
+
+	<h1>Shall we play a game?</h1>
+
+    <p style="font-weight:bold;font-size;larger">1</p>
+	<div id="game-container">
+		<p>What do I want to do that for?</p>
+		<p>
+			<b>Passwords?</b>
+		</p>
+		<form th:action="@{/hash-password}" method="post">
+			<label for="password">Password please:</label> <input id="password"
+				name="password" size="100" />
+			<button type="submit">Store</button>
+		</form>
+		<p>
+			<span th:if="${hashed!=null}">Hash as Hex: <span
+				th:text="${hashed}"></span></span>
+		</p>
+		<p>
+			<span th:if="${hashed!=null}">Hash as integer: <span
+				th:text="${hashedInt}"></span></span>
+		</p>
+
+		<div id="game-container">
+			<p>
+				<b>Crack My Hash!</b>
+			</p>
+			<form th:action="@{/crack-password}" method="post">
+				<label for="hex-hash">Password hash (hex) please:</label> <input
+					id="hex-hash" name="hex-hash" size="100" /> <label for="attempts">Attempts:</label>
+				<input id="attempts" name="attempts" size="10" />
+				<button type="submit">CRACK!</button>
+			</form>
+			<ul>
+				<th:block th:each="val, i: ${preimagesDict}">
+					<li th:text="${val}" />
+
+				</th:block>
+			</ul>
+
+		</div>
+	</div>
+    <hr style="margin-bottom:20px">
+    <p style="font-weight:bold;font-size;larger">2</p>
+	<div id="game-container">
+
+		<p>
+			A <b>Message Digest!</b>
+		</p>
+		<form th:action="@{/hash-documents}" method="post">
+			<table>
+				<tr>
+					<th>
+						<p>Document One:</p>
+					</th>
+					<th><p>Received Document</p></th>
+				</tr>
+				<tr>
+					<td><textarea
+							th:style="(${docOneHash ==null} ?  ' ' : (${match==true} ? 'color:green':'color:red'))"
+							id="docOne" name="docOne" rows="10" cols="70">I forgot. But still...don't you realize? The next time we see sky
+it'll be over another town. The next time you take a test, it'll be in
+some other school. Our parents, they want the bestest stuff for us.
+But right now they gotta do what's right for them, 'cause it's their
+time. Their time, up there. Down here it's our time. It's our time
+down here. That's all over the second we ride up "Troy's bucket".</textarea></td>
+
+					<td><textarea id="docTwo"
+							th:style="(${docOneHash ==null} ?  ' ' : (${match==true} ? 'color:green':'color:red'))"
+							name="docTwo" rows="10" cols="70">I forgot. But still...don't you realize? The next time we see sky
+it'll be over another town. The next time you take a test, it'll be in
+some other school. Our parents, they want the bestest stuff for us.
+But right now they gotta do what's right for them, cause it's their
+time. Their time, up there. Down here it's our time. It's our time
+down here. That's all over the second we ride up "Troy's bucket".</textarea></td>
+				</tr>
+				<tr>
+					<td><button type="submit">Hash Documents</button></td>
+				</tr>
+				<tr>
+					<td><span th:text="${docOneHash}"></span></td>
+					<td><span th:text="${docTwoHash}"></span></td>
+				</tr>
+				<tr>
+					<td th:if="${match!=null}"><p>
+							Has the messages integrity been preserved? <span
+								th:if="${!match}">no sorry</span> <span th:if="${match}">yes!</span>
+						</p></td>
+
+				</tr>
+			</table>
+		</form>
+	</div>
+
+    <hr style="margin-bottom:20px">
+    <p style="font-weight:bold;font-size;larger">3</p>
+	<div id="game-container">
+		<p>
+			<b>Help me!</b> stop somebody from changing my hash.
+		</p>
+		<form th:action="@{/hmac-document}" method="post">
+			<table>
+				<tr>
+					<th>
+						<p>Document One:</p>
+					</th>
+
+				</tr>
+				<tr>
+					<td>
+					<p><label for="key">Shared Secret:</label><input id="key" name="key" size="40"/></p>
+					<textarea
+							
+							id="docOne" name="docOne" rows="10" cols="70">I forgot. But still...don't you realize? The next time we see sky
+it'll be over another town. The next time you take a test, it'll be in
+some other school. Our parents, they want the bestest stuff for us.
+But right now they gotta do what's right for them, 'cause it's their
+time. Their time, up there. Down here it's our time. It's our time
+down here. That's all over the second we ride up "Troy's bucket".</textarea></td>
+				</tr>
+				<tr>
+					<td><button type="submit">Generate a Message Authentication Code</button></td>
+				</tr>
+				<tr>
+                    <td th:if="${docOneHash!=null}"><p>Hash: <b><span th:text="${docOneHash}"></span></b></p></td>
+                </tr>
+				<tr>
+				    <td th:if="${docOneHmac!=null}"><p>Hashed Message Authentication Code: <b><span th:text="${docOneHmac}"></span></b></p></td>
+				</tr>
+
+			</table>
+		</form>
+	</div>
+
+
+
+
+</body>
+</html>

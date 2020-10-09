@@ -9,41 +9,187 @@
 
 	<h1>Shall we play a game?</h1>
 
-
+    <p style="font-weight:bold;font-size;larger">1</p>
 	<div id="game-container">
+		<p>
+			<b>JavaScript Hashing function</b> Must return a positive integer. Note, the
+			result is constrained to the size of a JavaScript number.
+		</p>
 		<form th:action="@{/update-script}" method="post">
-			<label for="message">Input Script:</label>
+
 			<textarea id="script" name="script" rows="25" cols="70"
 				th:inline="text">[[${script}]]</textarea>
-			<button type="submit">Update</button>
-		</form>
-	</div>
-
-	<div id="game-container">
-		<form th:action="@{/hash}" method="post">
-
-			<label for="message">Input Message:</label><input id="message"
-				name="message" th:value="${message}" />
 			<p>
-
-				<button type="submit">Compute</button>
+				<button type="submit" style="width: 25%">Save</button>
 			</p>
 		</form>
-		Result: <span th:text="${result}"
-			style="border: 1px SOLID; padding: 10px"></span>
 	</div>
+
+	<div id="game-container">
+		<p>
+			<b>Hash</b> generate an integer hash for a given input, slightly
+			different inputs should have vastly different results (or appear
+			random)
+		</p>
+		<form th:action="@{/hash}" method="post">
+
+			<label for="message">Input Message (Key):</label><input id="message"
+				name="message" th:value="${message}" />
+
+			<button type="submit">Compute</button>
+
+		</form>
+		<p th:if="${messageBinary!=null}">
+			Input message in binary: <span th:if="${messageBinary!=null}"
+				th:text="${messageBinary}"
+				style="border: 1px SOLID; padding: 5px; margin: 5px"></span>
+		</p>
+		<p th:if="${result!=null}">
+			Hash Result (integer value of hash): <span th:if="${result!=null}"
+				th:text="${result}"
+				style="border: 1px SOLID; padding: 5px; margin: 5px"></span>
+		</p>
+		<p th:if="${result!=null}">
+			Hash Result (binary value of hash): <span
+				th:if="${resultBinary!=null}" th:text="${resultBinary}"
+				style="border: 1px SOLID; padding: 5px; margin: 5px"></span>
+		</p>
+		<p th:if="${result!=null}">
+			Hash Result (hex value of hash): <span th:if="${resultHex!=null}"
+				th:text="${resultHex}"
+				style="border: 1px SOLID; padding: 5px; margin: 5px"></span>
+		</p>
+	</div>
+	
 
 
 	<div id="game-container">
-		Compute for random input
+		<p>
+			<b>Compute</b> result for random input and place into a fixed size of
+			buckets (will not depict the result if > 128 buckets)
+		</p>
 		<form th:action="@{/randomise}" method="post">
-		<label for="no-words">Number of random words</label><input id="no-of-words"
-                name="no-of-words"/>
+			<label for="no-words">Number of random words:</label><input
+				id="no-of-words" name="no-of-words" /> <label for="no-of-buckets">Number
+				of possible outputs (should be a power of 2):</label><input id="no-of-buckets" name="no-of-buckets"
+				th:value="${noOfBuckets}" />
 			<button type="submit">Compute</button>
 		</form>
+		<p>
+		<table>
+			<tr>
+				<th:block th:each="val, i: ${buckets}">
+					<th th:if="${i.index < i.size-1}" style="text-align: center"
+						th:text="${i.index}"></th>
+					<th th:if="${i.index == i.size-1}"
+						style="color: red; text-align: right" th:text="Overflow"></th>
+				</th:block>
+			</tr>
+			<tr>
+				<th:block th:each="val, i: ${buckets}">
+					<td
+						th:style="${i.index == i.size-1}? 'color:red; text-align:right' : 'text-align:center;border: 1px SOLID;padding:2px'"
+						th:text="${val}"></td>
+				</th:block>
+			</tr>
+
+		</table>
+		</p>
+		<th:block th:if="${noOfCollisions!=null}">
+			<p>If there are <span th:text="${noOfBuckets}"></span> buckets, there are <span th:text="${noOfBuckets}"></span> possible hashes! - this is a
+				<span th:text="${hashBits}"></span> bit hash (2^<span th:text="${hashBits}"></span>).
+			<p>
+				Number of collisions = <span th:text="${noOfCollisions}"></span>
+			</p>
+			<p>
+				Clustering measure = <span th:text="${clusteringMetric}"></span>
+				(closest to 1 is desirable)]
+			</p>
+		</th:block>
+
+		Example Collisions:
+		<ul>
+			<th:block th:if="${collisions}" th:each="val, i: ${collisions}"
+				th:unless="${i.index > 3}">
+				<li><span th:text="${val[0]}"></span> ------ <span
+					th:text="${val[1]}"></span></li>
+			</th:block>
+		</ul>
 	</div>
+	
+	<hr>
+	<p style="font-weight:bold;font-size;larger">2</p>
 
+	<div id="game-container">
+		<p>
+			<b>Find an input with the same hash!</b> (find the second preimage -
+			we are constraining the search to random alphabetical string)
+		<form th:action="@{/find-second-preimage-random}" method="post">
+			<label for="find-second-preimage">Your message (Key):</label> <input
+				id="find-second-preimage" name="find-second-preimage" /> <label
+				for="find-second-preimage-attempts">Attempts (no):</label> <input
+				id="find-second-preimage-attempts"
+				name="find-second-preimage-attempts" />
+			<button type="submit">Compute Using Random Input</button>
+		</form>
+		<ul>
+			<th:block th:each="val, i: ${secondPreimages}">
+				<li th:text="${val}" />
 
+			</th:block>
+		</ul>
+		<form th:action="@{/find-second-preimage-dict}" method="post">
+			<label for="find-second-preimage-dict">Your message (Key)</label> <input
+				id="find-second-preimage-dict" name="find-second-preimage-dict" />
+			<label for="find-second-preimage-attempts-dict">Attempts
+				(no):</label> <input id="find-second-preimage-attempts-dict"
+				name="find-second-preimage-attempts-dict" />
+			<button type="submit">Compute Using Dictionary Inputs</button>
+		</form>
+		<ul>
+			<th:block th:each="val, i: ${secondPreimagesDict}">
+				<li th:text="${val}" />
+
+			</th:block>
+		</ul>
+		</p>
+	</div>
+	
+	<hr>
+	<p style="font-weight:bold;font-size;larger">3</p>
+	<div id="game-container">
+		<p>
+			<b>Find the original input from my hash!</b> (find the preimage). Note, there is no gurantee we
+			will find the original input here - it might just be another with the same hash (second preimage).
+		<form th:action="@{/find-preimage-random}" method="post">
+			<label for="find-preimage">Your hash (integer):</label> <input
+				id="find-preimage" name="find-preimage" /> <label
+				for="find-preimage-attempts">Attempts (no):</label> <input
+				id="find-preimage-attempts" name="find-preimage-attempts" />
+			<button type="submit">Compute Using Random Input</button>
+		</form>
+		<ul>
+            <th:block th:each="val, i: ${preimages}">
+                    <li th:text="${val}"/>
+
+            </th:block>
+        </ul>
+        <form th:action="@{/find-preimage-dict}" method="post">
+            <label for="find-preimage-dict">Your hash (integer):</label> <input
+                id="find-preimage-dict" name="find-preimage-dict" /> <label
+                for="find-preimage-attempts-dict">Attempts (no):</label> <input
+                id="find-preimage-attempts-dict" name="find-preimage-attempts-dict" />
+            <button type="submit">Compute Using Dictionary Inputs</button>
+        </form>
+        <ul>        
+            <th:block th:each="val, i: ${preimagesDict}">
+                    <li th:text="${val}"/>
+
+            </th:block>
+        </ul>
+        If there is more than one output, we have likely not succeeded.
+		</p>
+	</div>
 
 
 </body>
