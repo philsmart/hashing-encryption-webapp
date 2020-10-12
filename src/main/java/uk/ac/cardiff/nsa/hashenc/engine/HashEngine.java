@@ -53,6 +53,12 @@ public class HashEngine {
                     } else {
                         log.debug("Hash it outside output range! {}",hashInt);
                         buckets[buckets.length-1]++;
+                        if (collisions.containsKey(buckets.length-1)) {
+                            String[] example = new String[] {collisions.get(buckets.length-1),message};
+                            exampleCollisions.add(example);
+                        } else {
+                            collisions.put(buckets.length-1, message);
+                        }
                     }
                     
                 }

@@ -9,11 +9,11 @@
 
 	<h1>Shall we play a game?</h1>
 
-    <p style="font-weight:bold;font-size;larger">1</p>
+	<p style="font-weight: bold;">1</p>
 	<div id="game-container">
 		<p>
-			<b>JavaScript Hashing function</b> Must return a positive integer. Note, the
-			result is constrained to the size of a JavaScript number.
+			<b>JavaScript Hashing function</b> Must return a positive integer.
+			Note, the result is constrained to the size of a JavaScript number.
 		</p>
 		<form th:action="@{/update-script}" method="post">
 
@@ -60,7 +60,7 @@
 				style="border: 1px SOLID; padding: 5px; margin: 5px"></span>
 		</p>
 	</div>
-	
+
 
 
 	<div id="game-container">
@@ -70,8 +70,9 @@
 		</p>
 		<form th:action="@{/randomise}" method="post">
 			<label for="no-words">Number of random words:</label><input
-				id="no-of-words" name="no-of-words" /> <label for="no-of-buckets">Number
-				of possible outputs (should be a power of 2):</label><input id="no-of-buckets" name="no-of-buckets"
+				id="no-of-words" name="no-of-words" value="500" required /> <label
+				for="no-of-buckets">Number of possible outputs (should be a
+				power of 2):</label><input required id="no-of-buckets" name="no-of-buckets"
 				th:value="${noOfBuckets}" />
 			<button type="submit">Compute</button>
 		</form>
@@ -96,8 +97,11 @@
 		</table>
 		</p>
 		<th:block th:if="${noOfCollisions!=null}">
-			<p>If there are <span th:text="${noOfBuckets}"></span> buckets, there are <span th:text="${noOfBuckets}"></span> possible hashes! - this is a
-				<span th:text="${hashBits}"></span> bit hash (2^<span th:text="${hashBits}"></span>).
+			<p>
+				If there are <span th:text="${noOfBuckets}"></span> buckets, there
+				are <span th:text="${noOfBuckets}"></span> possible hashes! - this
+				is a <span th:text="${hashBits}"></span> bit hash (2^<span
+					th:text="${hashBits}"></span>).
 			<p>
 				Number of collisions = <span th:text="${noOfCollisions}"></span>
 			</p>
@@ -116,9 +120,9 @@
 			</th:block>
 		</ul>
 	</div>
-	
+
 	<hr>
-	<p style="font-weight:bold;font-size;larger">2</p>
+	<p style="font-weight: bold;">2</p>
 
 	<div id="game-container">
 		<p>
@@ -126,9 +130,9 @@
 			we are constraining the search to random alphabetical string)
 		<form th:action="@{/find-second-preimage-random}" method="post">
 			<label for="find-second-preimage">Your message (Key):</label> <input
-				id="find-second-preimage" name="find-second-preimage" /> <label
+				id="find-second-preimage" name="find-second-preimage" required /> <label
 				for="find-second-preimage-attempts">Attempts (no):</label> <input
-				id="find-second-preimage-attempts"
+				id="find-second-preimage-attempts" required
 				name="find-second-preimage-attempts" />
 			<button type="submit">Compute Using Random Input</button>
 		</form>
@@ -140,10 +144,10 @@
 		</ul>
 		<form th:action="@{/find-second-preimage-dict}" method="post">
 			<label for="find-second-preimage-dict">Your message (Key)</label> <input
-				id="find-second-preimage-dict" name="find-second-preimage-dict" />
-			<label for="find-second-preimage-attempts-dict">Attempts
+				id="find-second-preimage-dict" name="find-second-preimage-dict"
+				required /> <label for="find-second-preimage-attempts-dict">Attempts
 				(no):</label> <input id="find-second-preimage-attempts-dict"
-				name="find-second-preimage-attempts-dict" />
+				name="find-second-preimage-attempts-dict" required />
 			<button type="submit">Compute Using Dictionary Inputs</button>
 		</form>
 		<ul>
@@ -154,40 +158,41 @@
 		</ul>
 		</p>
 	</div>
-	
+
 	<hr>
-	<p style="font-weight:bold;font-size;larger">3</p>
+	<p style="font-weight: bold;">3</p>
 	<div id="game-container">
 		<p>
-			<b>Find the original input from my hash!</b> (find the preimage). Note, there is no gurantee we
-			will find the original input here - it might just be another with the same hash (second preimage).
+			<b>Find the original input from my hash!</b> (find the preimage).
+			Note, there is no gurantee we will find the original input here - it
+			might just be another with the same hash (second preimage).
 		<form th:action="@{/find-preimage-random}" method="post">
 			<label for="find-preimage">Your hash (integer):</label> <input
-				id="find-preimage" name="find-preimage" /> <label
+				id="find-preimage" name="find-preimage" required/> <label
 				for="find-preimage-attempts">Attempts (no):</label> <input
-				id="find-preimage-attempts" name="find-preimage-attempts" />
+				id="find-preimage-attempts" name="find-preimage-attempts" required/>
 			<button type="submit">Compute Using Random Input</button>
 		</form>
 		<ul>
-            <th:block th:each="val, i: ${preimages}">
-                    <li th:text="${val}"/>
+			<th:block th:each="val, i: ${preimages}">
+				<li th:text="${val}" />
 
-            </th:block>
-        </ul>
-        <form th:action="@{/find-preimage-dict}" method="post">
-            <label for="find-preimage-dict">Your hash (integer):</label> <input
-                id="find-preimage-dict" name="find-preimage-dict" /> <label
-                for="find-preimage-attempts-dict">Attempts (no):</label> <input
-                id="find-preimage-attempts-dict" name="find-preimage-attempts-dict" />
-            <button type="submit">Compute Using Dictionary Inputs</button>
-        </form>
-        <ul>        
-            <th:block th:each="val, i: ${preimagesDict}">
-                    <li th:text="${val}"/>
+			</th:block>
+		</ul>
+		<form th:action="@{/find-preimage-dict}" method="post">
+			<label for="find-preimage-dict">Your hash (integer):</label> <input
+				id="find-preimage-dict" name="find-preimage-dict" required/> <label
+				for="find-preimage-attempts-dict">Attempts (no):</label> <input
+				id="find-preimage-attempts-dict" name="find-preimage-attempts-dict" required/>
+			<button type="submit">Compute Using Dictionary Inputs</button>
+		</form>
+		<ul>
+			<th:block th:each="val, i: ${preimagesDict}">
+				<li th:text="${val}" />
 
-            </th:block>
-        </ul>
-        If there is more than one output, we have likely not succeeded.
+			</th:block>
+		</ul>
+		If there is more than one output, we have likely not succeeded.
 		</p>
 	</div>
 

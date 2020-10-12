@@ -16,7 +16,7 @@
 			<b>Passwords?</b>
 		</p>
 		<form th:action="@{/hash-password}" method="post">
-			<label for="password">Password please:</label> <input id="password"
+			<label for="password">Password please:</label> <input required="true" id="password"
 				name="password" size="100" />
 			<button type="submit">Store</button>
 		</form>
@@ -35,8 +35,8 @@
 			</p>
 			<form th:action="@{/crack-password}" method="post">
 				<label for="hex-hash">Password hash (hex) please:</label> <input
-					id="hex-hash" name="hex-hash" size="100" /> <label for="attempts">Attempts:</label>
-				<input id="attempts" name="attempts" size="10" />
+					id="hex-hash" name="hex-hash" size="100" required="true"/> <label for="attempts">Attempts:</label>
+				<input id="attempts" name="attempts" size="10" value="500" required="true"/>
 				<button type="submit">CRACK!</button>
 			</form>
 			<ul>
@@ -116,7 +116,7 @@ down here. That's all over the second we ride up "Troy's bucket".</textarea></td
 				</tr>
 				<tr>
 					<td>
-					<p><label for="key">Shared Secret:</label><input id="key" name="key" size="40"/></p>
+					<p><label for="key">Shared Secret:</label><input id="key" name="key" size="40" value="yourkey"></p>
 					<textarea
 							
 							id="docOne" name="docOne" rows="10" cols="70">I forgot. But still...don't you realize? The next time we see sky
