@@ -10,7 +10,6 @@ import javax.script.ScriptException;
 public class ScriptHelper {
     
     public static Object runScript(final String script, final String message) throws ScriptException, NoSuchMethodException {
-        
         final ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
         engine.eval(new StringReader(script));
         Invocable invocable = (Invocable) engine;

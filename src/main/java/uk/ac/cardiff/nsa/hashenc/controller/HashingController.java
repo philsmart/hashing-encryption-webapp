@@ -79,7 +79,7 @@ import uk.ac.cardiff.nsa.hashenc.model.BucketsWrapper;
         BucketsWrapper wrapper = HashEngine.hashToBuckets(randomWords, script, numberOfBuckets);
         int noOfCollisions = HashEngine.numberOfCollisions(wrapper.getBuckets());
 
-        log.debug("Buckets [{}]", wrapper.getBuckets());
+        //log.debug("Buckets [{}]", wrapper.getBuckets());
         if (numberOfBuckets<=128) {
             //only add back the number of buckets if there are not that many, otherwise browser death!
             model.addFlashAttribute("buckets", wrapper.getBuckets());
