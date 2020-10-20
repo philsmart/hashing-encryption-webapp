@@ -44,15 +44,13 @@ import uk.ac.cardiff.nsa.hashenc.engine.HashEngine;
         return "redirect:hashing-usage";
     }
     
-    @PostMapping("/hash-documents") public String hashDocuments(@RequestParam("docOne") final String docOne,
-            @RequestParam("docTwo") final String docTwo,
+    @PostMapping("/hash-documents") public String hashDocuments(@RequestParam("docTwo") final String docTwo,
             final RedirectAttributes model) {
 
-        final String docOneHash = HashEngine.constructCryptographicHash(docOne);
         final String docTwoHash = HashEngine.constructCryptographicHash(docTwo);
-        model.addFlashAttribute("docOneHash", docOneHash);
         model.addFlashAttribute("docTwoHash", docTwoHash);
-        model.addFlashAttribute("match", docTwoHash.equals(docOneHash));
+        model.addFlashAttribute("docTwo", docTwo);
+        model.addFlashAttribute("match", docTwoHash.equals("40d2c42d9c170b0699fd898acecf01df0ccd8efc70b294be17816956b265b968"));
         return "redirect:hashing-usage";
     }
     

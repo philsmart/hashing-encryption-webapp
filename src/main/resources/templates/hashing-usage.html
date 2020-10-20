@@ -64,8 +64,8 @@
 					<th><p>Received Document</p></th>
 				</tr>
 				<tr>
-					<td><textarea
-							th:style="(${docOneHash ==null} ?  ' ' : (${match==true} ? 'color:green':'color:red'))"
+					<td><textarea disabled
+							th:style="(${docTwoHash ==null} ?  ' ' : (${match==true} ? 'color:green':'color:red'))"
 							id="docOne" name="docOne" rows="10" cols="70">I forgot. But still...don't you realize? The next time we see sky
 it'll be over another town. The next time you take a test, it'll be in
 some other school. Our parents, they want the bestest stuff for us.
@@ -73,20 +73,22 @@ But right now they gotta do what's right for them, 'cause it's their
 time. Their time, up there. Down here it's our time. It's our time
 down here. That's all over the second we ride up "Troy's bucket".</textarea></td>
 
-					<td><textarea id="docTwo"
-							th:style="(${docOneHash ==null} ?  ' ' : (${match==true} ? 'color:green':'color:red'))"
+					<td><textarea th:if="${docTwo == null}" id="docTwo"
+							th:style="(${docTwoHash ==null} ?  ' ' : (${match==true} ? 'color:green':'color:red'))"
 							name="docTwo" rows="10" cols="70">I forgot. But still...don't you realize? The next time we see sky
 it'll be over another town. The next time you take a test, it'll be in
 some other school. Our parents, they want the bestest stuff for us.
 But right now they gotta do what's right for them, cause it's their
 time. Their time, up there. Down here it's our time. It's our time
-down here. That's all over the second we ride up "Troy's bucket".</textarea></td>
+down here. That's all over the second we ride up "Troy's bucket".</textarea>
+                        <textarea th:if="${docTwo != null}" th:text="${docTwo}"
+                        th:style="(${docTwoHash ==null} ?  ' ' : (${match==true} ? 'color:green':'color:red'))"
+                            name="docTwo" rows="10" cols="70"></textarea>
+                </td>
 				</tr>
+				
 				<tr>
-					<td><button type="submit">Hash Documents</button></td>
-				</tr>
-				<tr>
-					<td><span th:text="${docOneHash}"></span></td>
+					<td><span>Digest:sha256: 40d2c42d9c170b0699fd898acecf01df0ccd8efc70b294be17816956b265b968</span></td>
 					<td><span th:text="${docTwoHash}"></span></td>
 				</tr>
 				<tr>
@@ -96,6 +98,10 @@ down here. That's all over the second we ride up "Troy's bucket".</textarea></td
 						</p></td>
 
 				</tr>
+				<tr>
+                    <td></td>
+                    <td><button type="submit">Hash Document</button></td>
+                </tr>
 			</table>
 		</form>
 	</div>
@@ -117,7 +123,7 @@ down here. That's all over the second we ride up "Troy's bucket".</textarea></td
 				<tr>
 					<td>
 					<p><label for="key">Shared Secret:</label><input id="key" name="key" size="40" value="yourkey"></p>
-					<textarea
+					<textarea 
 							
 							id="docOne" name="docOne" rows="10" cols="70">I forgot. But still...don't you realize? The next time we see sky
 it'll be over another town. The next time you take a test, it'll be in
