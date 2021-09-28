@@ -1,3 +1,6 @@
+.DS_Store
+.DS_Store/
+target/
 HELP.md
 .gradle
 build/
@@ -5,6 +8,7 @@ build/
 !**/src/main/**
 !**/src/test/**
 /bin/
+bin/
 ### STS ###
 .apt_generated
 .classpath
