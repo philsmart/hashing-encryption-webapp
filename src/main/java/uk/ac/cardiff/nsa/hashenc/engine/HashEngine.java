@@ -131,6 +131,20 @@ public class HashEngine {
         return builder.toString();
     }
     
+    public static String longToBinaryString(final long diffusedHash) {
+        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+        buffer.putLong(diffusedHash);
+        //will always produce 8 bytes as that is the max size of a long 64 bit.
+        byte[] bytes = buffer.array();
+        StringBuilder builder = new StringBuilder();
+        for (final byte b : bytes) {
+            builder.append("[").append(byteToBinary(b)).append("]");
+        }
+        return builder.toString();
+    }
+    
+   
+    
 
     /**
      * Generate a sha256 non-cryptographic hash for a string.

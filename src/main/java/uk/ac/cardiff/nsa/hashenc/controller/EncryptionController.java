@@ -1,7 +1,5 @@
 package uk.ac.cardiff.nsa.hashenc.controller;
 
-import java.math.BigInteger;
-
 import javax.script.ScriptException;
 
 import org.slf4j.Logger;
@@ -51,7 +49,7 @@ public class EncryptionController {
             model.addAttribute("script", TEMPLATE_SCRIPT);
         } else {
             model.addAttribute("script", script);
-            model.addAttribute("message", "Text Here");
+            model.addAttribute("message", "Text");
             model.addAttribute("key", "10001");
         }
         return "enc";
@@ -86,18 +84,22 @@ public class EncryptionController {
         model.addFlashAttribute("key", key);
         model.addFlashAttribute("script", script);
         
-
+        //assume binary string and parse to long.
+        Long keyAsLong = Long.parseLong(key, 2);
+        log.info("Key in binary {}",HashEngine.longToBinaryString(keyAsLong));
+        log.info("Key in bytes: {}",EncryptionEngine.longToBytesIgnoreZeroBytes(keyAsLong));
         try {
-            final Object encResult = ScriptHelper.runEncryptScript("cipherTextAsBytes",script, message, key);             
-
+            final Object encResult = ScriptHelper.runEncryptScript("cipherTextAsBytes",script, message, 
+                    EncryptionEngine.longToBytesIgnoreZeroBytes(keyAsLong));             
+            log.info("Result of encrypt script: {}, {}", encResult, encResult.getClass());
             if (encResult instanceof byte[]) {
             	byte[] encBytes = (byte[]) encResult;
                 model.addFlashAttribute("resultHex", EncryptionEngine.byteToHex(encBytes));
                 model.addFlashAttribute("resultBinary", EncryptionEngine.byteToBinaryString(encBytes));
-                model.addFlashAttribute("result",  new BigInteger(encBytes).longValue());
+                model.addFlashAttribute("result",  EncryptionEngine.byteToHex(message.getBytes()));
                 
                 final Object decryptResult = ScriptHelper.runEncryptScript("decodedMessage", script, encBytes, key);
-                log.info("Result of encrypt script: {}, {}", encResult, encResult.getClass());
+               
                 log.info("Result of decrypt script: {}, {}", decryptResult, decryptResult.getClass());
                 model.addFlashAttribute("decryptedMessage",  decryptResult);
 
