@@ -17,5 +17,16 @@ public class ScriptHelper {
         return invocable.invokeFunction("hash", message);
         
     }
+    
+    //FIXME no need for two methods here.
+    public static Object runEncryptScript(final String varName, final String script, final Object... params) 
+    		throws ScriptException, NoSuchMethodException {
+        final ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+        engine.eval(new StringReader(script));
+        Invocable invocable = (Invocable) engine;
+
+        return invocable.invokeFunction(varName, params);
+        
+    }
 
 }

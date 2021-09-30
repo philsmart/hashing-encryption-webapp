@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Token Challenge</title>
+<link th:href="@{/styles/style.css}" rel="stylesheet" />
+</head>
+<body>
+
+	<h1>Shall we play more games?</h1>
+
+	<p style="font-weight: bold;">1</p>
+	<div id="game-container">
+	
+	<p>
+			<b>JavaScript Encryption function. Must return a byte array.</b> 
+		<form th:action="@{/enc-update-script}" method="post">
+
+			<textarea id="script" name="script" rows="25" cols="70"
+				th:inline="text">[[${script}]]</textarea>
+			<p>
+				<button type="submit" style="width: 25%">Save</button>
+			</p>
+		</form>
+	
+	<form th:action="@{/encrypt}" method="post">
+
+			<label for="message">Message:</label><input id="message"
+				name="message" th:value="${message}" size="30"/>
+				
+			<label for="key">Key (bits only):</label><input id="key"
+				name="key" th:value="${key}" size="30"/>
+
+			<button type="submit">Compute</button>
+
+	</form>
+	
+	
+		<p th:if="${result!=null}">
+			CipherText Result (binary value): <span
+				th:if="${resultBinary!=null}" th:text="${resultBinary}"
+				style="border: 1px SOLID; padding: 5px; margin: 5px"></span>
+		</p>
+		<p th:if="${result!=null}">
+			CipherText Result (hex value): <span th:if="${resultHex!=null}"
+				th:text="${resultHex}"
+				style="border: 1px SOLID; padding: 5px; margin: 5px"></span>
+		</p>
+		<p th:if="${result!=null}">
+			Decrypted Message: <span th:if="${decryptedMessage!=null}"
+				th:text="${decryptedMessage}"
+				style="border: 1px SOLID; padding: 5px; margin: 5px"></span>
+		</p>
+		
+	</div>
+
+	
+
+
+</body>
+</html>

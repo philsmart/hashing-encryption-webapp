@@ -31,7 +31,7 @@ import uk.ac.cardiff.nsa.hashenc.model.BucketsWrapper;
             "var hash = function(string){\n" + 
             "    var hash = 0;\n" + 
             "    for (var i = 0; i < string.length; i++) {\n" + 
-            "      hash =hash + string.charCodeAt(i);\n" + 
+            "      hash = hash + string.charCodeAt(i);\n" + 
             "    }\n" + 
             "    return parseInt(hash);\n" + 
             "  \n" + 

@@ -104,6 +104,7 @@ public class HashEngine {
         return Double.toHexString(diffusedHash);
     }
     
+       
     public static String stringToBinaryString(final String message) {
         StringBuilder builder = new StringBuilder();
         for (final byte b : message.getBytes()) {
@@ -130,6 +131,7 @@ public class HashEngine {
         return builder.toString();
     }
     
+
     /**
      * Generate a sha256 non-cryptographic hash for a string.
      * 
