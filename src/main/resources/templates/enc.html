@@ -11,61 +11,67 @@
 
 	<p style="font-weight: bold;">1</p>
 	<div id="game-container">
-	
-	<p>
-			<b>JavaScript Encryption function. Must return a byte array.</b> 
-			<form th:action="@{/set-enc-template}" method="post" style="display:inline">
-	    		<select th:field="*{chosenScript}">
-  					<option th:value="tempOne">Original Template</option>
-  					<option th:value="basicXOR">Basic XOR</option> 		
-				</select>		
-				<button type="submit" style="width: 25%">Set</button>
-			
+
+		<p>
+			<b>JavaScript Encryption function. Must return a byte array.</b>
+		<form th:action="@{/set-enc-template}" th:object="${templateScript}" method="post"
+			style="display: inline">
+			<select id="templateScript" th:field="*{id}">
+				<option th:each="template : ${templateScripts}" 
+				    th:text="${template.name}"
+					th:value="${template.id}">
+			</select>
+			<button type="submit" style="width: 25%">Reset</button>
+
 		</form>
 		<form th:action="@{/enc-update-script}" method="post">
 
-			<textarea id="script" name="script" rows="25" cols="70"
+			<textarea id="script" name="script" rows="30" cols="70"
 				th:inline="text">[[${script}]]</textarea>
 			<p>
 				<button type="submit" style="width: 25%">Save</button>
 			</p>
 		</form>
-	
-	<form th:action="@{/encrypt}" method="post">
+
+		<form th:action="@{/encrypt}" method="post">
 
 			<label for="message">Message:</label><input id="message"
-				name="message" th:value="${message}" size="30"/>
-				
-			<label for="key">Key (bits only, max 64):</label><input id="key"
-				name="key" th:value="${key}" size="30"/>
+				name="message" th:value="${message}" size="30" /> <label for="key">Key
+				(bits only, max 64):</label><input id="key" name="key" th:value="${key}"
+				size="30" />
 
 			<button type="submit">Compute</button>
 
-	</form>
-	   <p th:if="${result!=null}">
-            Original Message (hex value): <span
-                th:if="${result!=null}" th:text="${result}"
-                style="border: 1px SOLID; padding: 5px; margin: 5px"></span>
-        </p>		
+		</form>
 		<p th:if="${result!=null}">
-			CipherText (encrypted) Result (hex value): <span th:if="${resultHex!=null}"
-				th:text="${resultHex}"
+			Original Message (hex value): <span th:if="${result!=null}"
+				th:text="${result}"
 				style="border: 1px SOLID; padding: 5px; margin: 5px"></span>
 		</p>
 		<p th:if="${result!=null}">
-            CipherText (encrypted) Result (binary value): <span
-                th:if="${resultBinary!=null}" th:text="${resultBinary}"
+			CipherText (encrypted) Result (hex value): <span
+				th:if="${resultHex!=null}" th:text="${resultHex}"
+				style="border: 1px SOLID; padding: 5px; margin: 5px"></span>
+		</p>
+		<p th:if="${result!=null}">
+            CipherText (encrypted) Result (base64 value): <span
+                th:if="${resultHex!=null}" th:text="${resultBase64}"
                 style="border: 1px SOLID; padding: 5px; margin: 5px"></span>
         </p>
+		<p th:if="${result!=null}">
+			CipherText (encrypted) Result (binary value): <span
+				th:if="${resultBinary!=null}" th:text="${resultBinary}"
+				style="border: 1px SOLID; padding: 5px; margin: 5px"></span>
+		</p>
 		<p th:if="${result!=null}">
 			Decrypted Message: <span th:if="${decryptedMessage!=null}"
 				th:text="${decryptedMessage}"
 				style="border: 1px SOLID; padding: 5px; margin: 5px"></span>
 		</p>
-		
+
 	</div>
 
-	
+
 
 
 </body>

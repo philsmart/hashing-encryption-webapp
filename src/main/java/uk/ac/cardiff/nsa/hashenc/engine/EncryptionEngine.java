@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -35,6 +36,10 @@ public class EncryptionEngine {
             }
         }
         return ArrayUtils.toPrimitive(byteList.toArray(new Byte[0]));
+    }
+
+    public static String byteToBase64(byte[] encBytes) {
+        return Base64.encodeBase64String(encBytes);
     }
 
 }

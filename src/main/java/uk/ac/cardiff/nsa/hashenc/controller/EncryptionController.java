@@ -1,5 +1,7 @@
 package uk.ac.cardiff.nsa.hashenc.controller;
 
+import java.util.List;
+
 import javax.script.ScriptException;
 
 import org.slf4j.Logger;
@@ -7,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -34,35 +37,79 @@ public class EncryptionController {
 	            + "   return str;\n"
 	            + "}";
 	 
-	 private static final String BASIC_XOR_TEMPLATE = 
-		 "var cipherTextAsBytes = function encrypt(message, keyAsBytes){\n"
-		 + "   var bytes = message.getBytes();\n"
-		 + "   var bytesOut = [];\n"
-		 + "   for (var i=0; i<bytes.length; ++i) {\n"
-		 + "        print(\"Before \" + bytes[i]);\n"
-		 + "        var b = bytes[i] ^ 0xFF;        \n"
-		 + "        bytes[i] = b;\n"
-		 + "        print(\"After: \" + UInt8(bytes[i]));\n"
-		 + "    }    \n"
-		 + "    return bytes;\n"
-		 + "}\n"
-		 + "\n"
-		 + "var decodedMessage = function decrypt(messageAsBytes, key){\n"
-		 + "   var str = '';\n"
-		 + "   print(\"Type of message: \"+typeof messageAsBytes);\n"
-		 + "   for (var i=0; i < messageAsBytes.length; ++i) {\n"
-		 + "        // convert signed int in the byte to unsigned before XOR\n"
-		 + "        var decryptedByte = UInt8(messageAsBytes[i]) ^ 0xFF;\n"
-		 + "	str+= String.fromCharCode(decryptedByte);\n"
-		 + "        \n"
-		 + "    }\n"
-		 + "\n"
-		 + "   return str;\n"
-		 + "}\n"
-		 + "\n"
-		 + "var UInt8 = function (value) {\n"
-		 + "	return (value & 0xFF);\n"
-		 + "};";
+	 private static final String ONE_TIME_PAD_TEMPLATE = 
+		 "var cipherTextAsBytes = function encrypt(message, keyAsBytes){\n" + 
+		 "   var bytes = message.getBytes();\n" + 
+		 "   if (message.getBytes().length!=keyAsBytes.length){\n" + 
+		 "      print(\"Key incompatible\");\n" + 
+		 "      return \"\".getBytes();\n" + 
+		 "   }\n" + 
+		 "   for (var i=0; i<bytes.length; ++i) {\n" + 
+		 "        print(\"Before \" + bytes[i]);\n" + 
+		 "        var b = bytes[i] ^ keyAsBytes[i];        \n" + 
+		 "        bytes[i] = b;\n" + 
+		 "        print(\"After: \" + UInt8(bytes[i]));\n" + 
+		 "    }    \n" + 
+		 "    return bytes;\n" + 
+		 "}\n" + 
+		 "\n" + 
+		 "var decodedMessage = function decrypt(messageAsBytes, keyAsBytes){\n" + 
+		 "   if (messageAsBytes.length!=keyAsBytes.length){\n" + 
+		 "      print(\"Key incompatible\");\n" + 
+		 "      return \"\".getBytes();\n" + 
+		 "   }\n" + 
+		 "   var str = '';\n" + 
+		 "   for (var i=0; i < messageAsBytes.length; ++i) {\n" + 
+		 "        // convert signed int in the byte to unsigned before XOR\n" + 
+		 "        var decryptedByte = UInt8(messageAsBytes[i]) ^ UInt8(keyAsBytes[i]);\n" + 
+		 "        str+= String.fromCharCode(decryptedByte);\n" + 
+		 "        \n" + 
+		 "    }\n" + 
+		 "\n" + 
+		 "   return str;\n" + 
+		 "}\n" + 
+		 "\n" + 
+		 "var UInt8 = function (value) {\n" + 
+		 "    return (value & 0xFF);\n" + 
+		 "};";
+	 
+	 private static final String BLOCK_CIPHER =
+	         "var cipherTextAsBytes = function encrypt(message, keyAsBytes){\n" + 
+	         "   var bytes = message.getBytes();\n" + 
+	         "   if (message.getBytes().length % keyAsBytes.length != 0){\n" + 
+	         "      print(\"Key incompatible\");\n" + 
+	         "      return \"\".getBytes();\n" + 
+	         "   }\n" + 
+	         "   for (var i=0; i<bytes.length; i=i+keyAsBytes.length) {\n" + 
+	         "        for (var j = 0; j < keyAsBytes.length; j++){\n" + 
+	         "           print(\"Before \" + bytes[i]);\n" + 
+	         "           var b = bytes[i+j] ^ keyAsBytes[j];        \n" + 
+	         "           bytes[i+j] = b;\n" + 
+	         "           print(\"After: \" + UInt8(bytes[i]));\n" + 
+	         "        }\n" + 
+	         "    }    \n" + 
+	         "    return bytes;\n" + 
+	         "}\n" + 
+	         "\n" + 
+	         "var decodedMessage = function decrypt(messageAsBytes, keyAsBytes){\n" + 
+	         "   if (messageAsBytes.length % keyAsBytes.length != 0){\n" + 
+	         "      print(\"Key incompatible\");\n" + 
+	         "      return \"\".getBytes();\n" + 
+	         "   }\n" + 
+	         "   var str = '';\n" + 
+	         "   for (var i=0; i<messageAsBytes.length; i=i+keyAsBytes.length) {\n" + 
+	         "        for (var j = 0; j < keyAsBytes.length; j++){\n" + 
+	         "           var decryptedByte = messageAsBytes[i+j] ^ keyAsBytes[j];        \n" + 
+	         "           str+= String.fromCharCode(decryptedByte);\n" + 
+	         "        }\n" + 
+	         "    } \n" + 
+	         "\n" + 
+	         "   return str;\n" + 
+	         "}\n" + 
+	         "\n" + 
+	         "var UInt8 = function (value) {\n" + 
+	         "    return (value & 0xFF);\n" + 
+	         "};";
 
 	/**
 	 * This script state is shared between all users of the application. This would
@@ -77,37 +124,43 @@ public class EncryptionController {
 	private String key;
 	
 	/** The name of the choosen script.*/
-	private String chosenScript;
+	private TemplateDTO chosenTemplate;
+	
+	private List<TemplateDTO> templates = List.of(
+	        new TemplateDTO(1, "basic"), new TemplateDTO(2, "One-time-pad"),
+	        new TemplateDTO(3,"Block Cipher"));
 
-	public EncryptionController() {
-		script = TEMPLATE_SCRIPT;
+	public EncryptionController() {		
 		message = "Text";
-		key = "10101100";
-		chosenScript = "tempOne";
+		//4 byte key.
+		key = "10111111000010001111111101110010";
+		chosenTemplate = templates.get(0);
+		script = TEMPLATE_SCRIPT;
 	}
 
 	@PostMapping("/set-enc-template") public String updateTemplateScript(
-			@RequestParam("chosenScript") final String scriptName,
+	        @ModelAttribute("templateScript") final TemplateDTO template,
 	        final RedirectAttributes model) {
-		log.debug("setting script: "+scriptName);
-		switch(scriptName){
-			case "tempOne" : script = TEMPLATE_SCRIPT; chosenScript = "tempOne"; break;
-			case "basicXOR" : script = BASIC_XOR_TEMPLATE; chosenScript = "basicXOR"; break;
+		log.debug("setting template: "+template.getId());
+		switch(template.getId()){
+			case 1 : script = TEMPLATE_SCRIPT; chosenTemplate = templates.get(0); break;
+			case 2 : script = ONE_TIME_PAD_TEMPLATE; chosenTemplate = templates.get(1); break;
+			case 3 : script = BLOCK_CIPHER; chosenTemplate = templates.get(2); break;
 		}
 		
-	    model.addFlashAttribute("script", script);
 	    return "redirect:enc";
 	}
 
 	@GetMapping("/enc")
 	public String getEncryptionPage(final Model model) {
 		if (script == null || script.isEmpty()) {
-			model.addAttribute("script", TEMPLATE_SCRIPT);
+			model.addAttribute("script", script);
 		} else {
 			model.addAttribute("key", key);
 			model.addAttribute("message", message);
 			model.addAttribute("script", script);
-			model.addAttribute("chosenScript", chosenScript);
+			model.addAttribute("templateScripts", templates);
+			model.addAttribute("templateScript", chosenTemplate);
 			
 		}
 		return "enc";
@@ -116,7 +169,6 @@ public class EncryptionController {
 	@PostMapping("/enc-update-script")
 	public String updateScript(@RequestParam("script") final String scriptInput, final RedirectAttributes model) {
 		script = scriptInput;
-		model.addFlashAttribute("script", scriptInput);
 		return "redirect:enc";
 	}
 
@@ -139,9 +191,12 @@ public class EncryptionController {
 		// assume binary string and parse to long.
 		Long keyAsLong = Long.parseLong(key, 2);
 		log.info("Key in binary {}", HashEngine.longToBinaryString(keyAsLong));
+		log.info("Message in binary {}", HashEngine.stringToBinaryString(message));
+		// is wrong if 0 bytes in the middle!
 		log.info("Key in bytes: {}", EncryptionEngine.longToBytesIgnoreZeroBytes(keyAsLong));
+		log.info("Message in bytes {}",message.getBytes());
 		try {
-			log.info("Message in bytes {}",message.getBytes());
+			
 			final Object encResult = ScriptHelper.runEncryptScript("cipherTextAsBytes", script, message,
 					EncryptionEngine.longToBytesIgnoreZeroBytes(keyAsLong));
 			
@@ -155,10 +210,12 @@ public class EncryptionController {
 				}
 				log.info("Returned message as binary: {}",sb.toString());
 				model.addFlashAttribute("resultHex", EncryptionEngine.byteToHex(encBytes));
+				model.addFlashAttribute("resultBase64", EncryptionEngine.byteToBase64(encBytes));
 				model.addFlashAttribute("resultBinary", EncryptionEngine.byteToBinaryString(encBytes));
 				model.addFlashAttribute("result", EncryptionEngine.byteToHex(message.getBytes()));
 
-				final Object decryptResult = ScriptHelper.runEncryptScript("decodedMessage", script, encBytes, key);
+				final Object decryptResult = ScriptHelper.runEncryptScript("decodedMessage", script, encBytes, 
+				        EncryptionEngine.longToBytesIgnoreZeroBytes(keyAsLong));
 
 				log.info("Result of decrypt script: {}, {}", decryptResult, decryptResult.getClass());
 				model.addFlashAttribute("decryptedMessage", decryptResult);
@@ -173,4 +230,29 @@ public class EncryptionController {
 
 	}
 
+}
+
+class TemplateDTO{
+    
+    private final int id;
+    
+    private final String name;
+    
+    
+    public TemplateDTO(int id, String name) {
+        super();
+        this.id = id;
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+
+    
 }
