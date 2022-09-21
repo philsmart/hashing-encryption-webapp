@@ -32,3 +32,8 @@ jobs:
       uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
       with:
         arguments: build
+    - name: Upload jar artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: hashing-encryption-latest.jar
+        path: build/libs/hashing-encryption-base-*.jar
