@@ -9,6 +9,7 @@ build/
 !**/src/test/**
 /bin/
 bin/
+bin
 ### STS ###
 .apt_generated
 .classpath
