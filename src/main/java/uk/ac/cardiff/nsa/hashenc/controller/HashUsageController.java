@@ -17,6 +17,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import uk.ac.cardiff.nsa.hashenc.engine.Dictionary;
 import uk.ac.cardiff.nsa.hashenc.engine.HashEngine;
 
+/**
+ * Controller that demonstrates basic hashing. 
+ */
 @Controller 
 public class HashUsageController {
 
