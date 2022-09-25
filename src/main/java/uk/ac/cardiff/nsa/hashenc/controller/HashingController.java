@@ -22,6 +22,10 @@ import uk.ac.cardiff.nsa.hashenc.engine.HashEngine;
 import uk.ac.cardiff.nsa.hashenc.engine.ScriptHelper;
 import uk.ac.cardiff.nsa.hashenc.model.BucketsWrapper;
 
+/** 
+ * Controller that demonstrates simple hashing. Not cryptographic by default, 
+ * unless a more sophisticated function where constructed.
+ */
 @Controller public class HashingController {
 
     /** Class logger. */

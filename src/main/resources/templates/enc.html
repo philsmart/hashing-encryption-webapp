@@ -2,10 +2,17 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8">
-<title>Token Challenge</title>
+<title>Hashing And Encryption</title>
 <link th:href="@{/styles/style.css}" rel="stylesheet" />
 </head>
 <body>
+	<header id="header-menu">
+		<ul>
+			<li><a href="/hashing">Hashing</a></li>
+			<li><a href="/hashing-usage">Hashing Usage</a></li>
+			<li><a class="active" href="/enc">Encryption</a></li>
+		</ul>
+	</header>
 
 	<h1>Shall we play more games?</h1>
 
@@ -14,14 +21,14 @@
 
 		<p>
 			<b>JavaScript Encryption function. Must return a byte array.</b>
-		<form th:action="@{/set-enc-template}" th:object="${templateScript}" method="post"
-			style="display: inline">
-			<select id="templateScript" th:field="*{id}">
-				<option th:each="template : ${templateScripts}" 
-				    th:text="${template.name}"
-					th:value="${template.id}">
+		<form th:action="@{/set-enc-template}" th:object="${templateScript}"
+			method="post" style="display: inline">
+			<select id="templateScript" name="templateScript">
+				<option th:each="template : ${templateScripts}"
+					th:selected="${template == chosenTemplate}" th:text="${template}"
+					th:value="${template}">
 			</select>
-			<button type="submit" style="width: 25%">Reset</button>
+			<button type="submit" style="width: 25%">Switch</button>
 
 		</form>
 		<form th:action="@{/enc-update-script}" method="post">
@@ -54,10 +61,10 @@
 				style="border: 1px SOLID; padding: 5px; margin: 5px"></span>
 		</p>
 		<p th:if="${result!=null}">
-            CipherText (encrypted) Result (base64 value): <span
-                th:if="${resultHex!=null}" th:text="${resultBase64}"
-                style="border: 1px SOLID; padding: 5px; margin: 5px"></span>
-        </p>
+			CipherText (encrypted) Result (base64 value): <span
+				th:if="${resultHex!=null}" th:text="${resultBase64}"
+				style="border: 1px SOLID; padding: 5px; margin: 5px"></span>
+		</p>
 		<p th:if="${result!=null}">
 			CipherText (encrypted) Result (binary value): <span
 				th:if="${resultBinary!=null}" th:text="${resultBinary}"
@@ -68,6 +75,7 @@
 				th:text="${decryptedMessage}"
 				style="border: 1px SOLID; padding: 5px; margin: 5px"></span>
 		</p>
+
 
 	</div>
 

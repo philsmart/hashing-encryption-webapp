@@ -1,15 +1,18 @@
 package uk.ac.cardiff.nsa.hashenc.controller;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.script.ScriptException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -18,104 +21,23 @@ import uk.ac.cardiff.nsa.hashenc.engine.EncryptionEngine;
 import uk.ac.cardiff.nsa.hashenc.engine.HashEngine;
 import uk.ac.cardiff.nsa.hashenc.engine.ScriptHelper;
 
+/**
+ * Basic Encryption controller. Is not thread-safe and will leak settings between users.
+ */
 @Controller
 public class EncryptionController {
 
 	/** Class logger. */
 	private final Logger log = LoggerFactory.getLogger(EncryptionController.class);
-
-	 private static final String TEMPLATE_SCRIPT =
-	            "var cipherTextAsBytes = function encrypt(message, keyAsBytes){\n"
-	            + "   return message.getBytes();\n"
-	            + "}\n"
-	            + "\n"
-	            + "var decodedMessage = function decrypt(messageAsBytes, key){\n"
-	            + "   var str = '';\n"
-	            + "   for (var i=0; i<messageAsBytes.length; ++i) {\n"
-	            + "	str+= String.fromCharCode(messageAsBytes[i]);\n"
-	            + "    }\n"
-	            + "   return str;\n"
-	            + "}";
-	 
-	 private static final String ONE_TIME_PAD_TEMPLATE = 
-		 "var cipherTextAsBytes = function encrypt(message, keyAsBytes){\n" + 
-		 "   var bytes = message.getBytes();\n" + 
-		 "   if (message.getBytes().length!=keyAsBytes.length){\n" + 
-		 "      print(\"Key incompatible\");\n" + 
-		 "      return \"\".getBytes();\n" + 
-		 "   }\n" + 
-		 "   for (var i=0; i<bytes.length; ++i) {\n" + 
-		 "        print(\"Before \" + bytes[i]);\n" + 
-		 "        var b = bytes[i] ^ keyAsBytes[i];        \n" + 
-		 "        bytes[i] = b;\n" + 
-		 "        print(\"After: \" + UInt8(bytes[i]));\n" + 
-		 "    }    \n" + 
-		 "    return bytes;\n" + 
-		 "}\n" + 
-		 "\n" + 
-		 "var decodedMessage = function decrypt(messageAsBytes, keyAsBytes){\n" + 
-		 "   if (messageAsBytes.length!=keyAsBytes.length){\n" + 
-		 "      print(\"Key incompatible\");\n" + 
-		 "      return \"\".getBytes();\n" + 
-		 "   }\n" + 
-		 "   var str = '';\n" + 
-		 "   for (var i=0; i < messageAsBytes.length; ++i) {\n" + 
-		 "        // convert signed int in the byte to unsigned before XOR\n" + 
-		 "        var decryptedByte = UInt8(messageAsBytes[i]) ^ UInt8(keyAsBytes[i]);\n" + 
-		 "        str+= String.fromCharCode(decryptedByte);\n" + 
-		 "        \n" + 
-		 "    }\n" + 
-		 "\n" + 
-		 "   return str;\n" + 
-		 "}\n" + 
-		 "\n" + 
-		 "var UInt8 = function (value) {\n" + 
-		 "    return (value & 0xFF);\n" + 
-		 "};";
-	 
-	 private static final String BLOCK_CIPHER =
-	         "var cipherTextAsBytes = function encrypt(message, keyAsBytes){\n" + 
-	         "   var bytes = message.getBytes();\n" + 
-	         "   if (message.getBytes().length % keyAsBytes.length != 0){\n" + 
-	         "      print(\"Key incompatible\");\n" + 
-	         "      return \"\".getBytes();\n" + 
-	         "   }\n" + 
-	         "   for (var i=0; i<bytes.length; i=i+keyAsBytes.length) {\n" + 
-	         "        for (var j = 0; j < keyAsBytes.length; j++){\n" + 
-	         "           print(\"Before \" + bytes[i]);\n" + 
-	         "           var b = bytes[i+j] ^ keyAsBytes[j];        \n" + 
-	         "           bytes[i+j] = b;\n" + 
-	         "           print(\"After: \" + UInt8(bytes[i]));\n" + 
-	         "        }\n" + 
-	         "    }    \n" + 
-	         "    return bytes;\n" + 
-	         "}\n" + 
-	         "\n" + 
-	         "var decodedMessage = function decrypt(messageAsBytes, keyAsBytes){\n" + 
-	         "   if (messageAsBytes.length % keyAsBytes.length != 0){\n" + 
-	         "      print(\"Key incompatible\");\n" + 
-	         "      return \"\".getBytes();\n" + 
-	         "   }\n" + 
-	         "   var str = '';\n" + 
-	         "   for (var i=0; i<messageAsBytes.length; i=i+keyAsBytes.length) {\n" + 
-	         "        for (var j = 0; j < keyAsBytes.length; j++){\n" + 
-	         "           var decryptedByte = messageAsBytes[i+j] ^ keyAsBytes[j];        \n" + 
-	         "           str+= String.fromCharCode(decryptedByte);\n" + 
-	         "        }\n" + 
-	         "    } \n" + 
-	         "\n" + 
-	         "   return str;\n" + 
-	         "}\n" + 
-	         "\n" + 
-	         "var UInt8 = function (value) {\n" + 
-	         "    return (value & 0xFF);\n" + 
-	         "};";
-
-	/**
-	 * This script state is shared between all users of the application. This would
-	 * need guarding (for thread concurrency) in a real app.
-	 */
-	private String script;
+	
+	/** A fixed list of encryption script resources.*/
+	private Map<String, Resource> encryptionScriptResources = 
+			 Map.of("one-time-pad", new ClassPathResource("scripts/encryption/one-time-pad.js"),
+					 "basic(none)", new ClassPathResource("scripts/encryption/basic.js"),
+					 "block-cipher", new ClassPathResource("scripts/encryption/block-cipher.js"));
+	
+	/** The loaded encryption scripts. Loaded from the encryptionScriptResources on init.*/
+	private Map<String, String> encryptionScripts;
 	
 	/** The current message.*/
 	private String message;
@@ -123,55 +45,89 @@ public class EncryptionController {
 	/** The current key.*/
 	private String key;
 	
-	/** The name of the choosen script.*/
-	private TemplateDTO chosenTemplate;
+	/** The name of the chosen encryption script.*/
+	private String chosenEncFunction;
 	
-	private List<TemplateDTO> templates = List.of(
-	        new TemplateDTO(1, "basic"), new TemplateDTO(2, "One-time-pad"),
-	        new TemplateDTO(3,"Block Cipher"));
-
+	/** Constructor.*/
 	public EncryptionController() {		
 		message = "Text";
 		//4 byte key.
 		key = "10111111000010001111111101110010";
-		chosenTemplate = templates.get(0);
-		script = TEMPLATE_SCRIPT;
+		chosenEncFunction = "basic(none)";
+		
+		// Load the scripts
+		encryptionScripts = new HashMap<>(encryptionScriptResources.size());
+		for (Map.Entry<String, Resource> resource : encryptionScriptResources.entrySet()) {
+			String resourceAsScript = ScriptHelper.loadScriptResourceToString(resource.getValue());
+			encryptionScripts.put(resource.getKey(), resourceAsScript);
+		}
+		
 	}
 
+	/**
+	 * Set the encryption function (or template script) to use
+	 * 
+	 * @param template the encryption function template to choose
+	 * @param model the model to store the results in
+	 * 
+	 * @return a redirect to the 'enc' page.
+	 */
 	@PostMapping("/set-enc-template") public String updateTemplateScript(
-	        @ModelAttribute("templateScript") final TemplateDTO template,
+			@RequestParam("templateScript") final String template,
 	        final RedirectAttributes model) {
-		log.debug("setting template: "+template.getId());
-		switch(template.getId()){
-			case 1 : script = TEMPLATE_SCRIPT; chosenTemplate = templates.get(0); break;
-			case 2 : script = ONE_TIME_PAD_TEMPLATE; chosenTemplate = templates.get(1); break;
-			case 3 : script = BLOCK_CIPHER; chosenTemplate = templates.get(2); break;
-		}
+		log.debug("setting template: "+template);
+		chosenEncFunction = template;
 		
 	    return "redirect:enc";
 	}
 
+	/**
+	 * Get the 'enc' page and set suitable model values.
+	 * 
+	 * @param model the model to return
+	 * 
+	 * @return the 'enc' page
+	 */
 	@GetMapping("/enc")
 	public String getEncryptionPage(final Model model) {
-		if (script == null || script.isEmpty()) {
-			model.addAttribute("script", script);
+		if (encryptionScripts.get(chosenEncFunction) == null || encryptionScripts.get(chosenEncFunction).isEmpty()) {
+			log.warn("Script was not choosen");
+			model.addAttribute("script", encryptionScripts.get(chosenEncFunction));
 		} else {
 			model.addAttribute("key", key);
 			model.addAttribute("message", message);
-			model.addAttribute("script", script);
-			model.addAttribute("templateScripts", templates);
-			model.addAttribute("templateScript", chosenTemplate);
+			model.addAttribute("script", encryptionScripts.get(chosenEncFunction));
+			model.addAttribute("templateScripts", 
+					encryptionScripts.entrySet().stream().map(k -> k.getKey()).collect(Collectors.toList()));
+			model.addAttribute("chosenTemplate", chosenEncFunction);
 			
 		}
 		return "enc";
 	}
 
+	/**
+	 * Update the encryption function (script).
+	 * 
+	 * @param scriptInput the new encryption function
+	 * @param model the model to store the results in
+	 * 
+	 * @return a redirect to the 'enc' page
+	 */
 	@PostMapping("/enc-update-script")
 	public String updateScript(@RequestParam("script") final String scriptInput, final RedirectAttributes model) {
-		script = scriptInput;
+		encryptionScripts.put(chosenEncFunction, scriptInput);
 		return "redirect:enc";
 	}
 
+	/**
+	 * Encrypt the message using the key and encryption function provided.
+	 * 
+	 * @param message the message to encrypt
+	 * @param key the key to use
+	 * @param model the model to store the results in
+	 * 
+	 * @return a redirect to the 'enc' page
+	 */
 	@PostMapping("/encrypt")
 	public String enc(@RequestParam("message") final String message, @RequestParam("key") final String key,
 			final RedirectAttributes model) {
@@ -183,7 +139,7 @@ public class EncryptionController {
 			model.addFlashAttribute("decryptedMessage", "KEY IS NOT BINARY (only 1 or 0 allowed)");
 			return "redirect:enc";
 		}
-
+		final String script = encryptionScripts.get(chosenEncFunction);
 		log.info("Message '{}', Script \n{}", message, script);
 		this.key = key;
 		this.message = message;
@@ -232,27 +188,3 @@ public class EncryptionController {
 
 }
 
-class TemplateDTO{
-    
-    private final int id;
-    
-    private final String name;
-    
-    
-    public TemplateDTO(int id, String name) {
-        super();
-        this.id = id;
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-
-    
-}

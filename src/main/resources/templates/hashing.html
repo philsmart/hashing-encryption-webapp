@@ -2,10 +2,17 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8">
-<title>Token Challenge</title>
+<title>Hashing And Encryption</title>
 <link th:href="@{/styles/style.css}" rel="stylesheet" />
 </head>
 <body>
+	<header id="header-menu">
+		<ul>
+			<li><a class="active" href="/hashing">Hashing</a></li>
+			<li><a href="/hashing-usage">Hashing Usage</a></li>
+			<li><a href="/enc">Encryption</a></li>
+		</ul>
+	</header>
 
 	<h1>Shall we play a game?</h1>
 
@@ -168,9 +175,9 @@
 			might just be another with the same hash (second preimage).
 		<form th:action="@{/find-preimage-random}" method="post">
 			<label for="find-preimage">Your hash (integer):</label> <input
-				id="find-preimage" name="find-preimage" required/> <label
+				id="find-preimage" name="find-preimage" required /> <label
 				for="find-preimage-attempts">Attempts (no):</label> <input
-				id="find-preimage-attempts" name="find-preimage-attempts" required/>
+				id="find-preimage-attempts" name="find-preimage-attempts" required />
 			<button type="submit">Compute Using Random Input</button>
 		</form>
 		<ul>
@@ -181,9 +188,10 @@
 		</ul>
 		<form th:action="@{/find-preimage-dict}" method="post">
 			<label for="find-preimage-dict">Your hash (integer):</label> <input
-				id="find-preimage-dict" name="find-preimage-dict" required/> <label
+				id="find-preimage-dict" name="find-preimage-dict" required /> <label
 				for="find-preimage-attempts-dict">Attempts (no):</label> <input
-				id="find-preimage-attempts-dict" name="find-preimage-attempts-dict" required/>
+				id="find-preimage-attempts-dict" name="find-preimage-attempts-dict"
+				required />
 			<button type="submit">Compute Using Dictionary Inputs</button>
 		</form>
 		<ul>
