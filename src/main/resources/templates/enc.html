@@ -44,7 +44,7 @@
 
 			<label for="message">Message:</label><input id="message"
 				name="message" th:value="${message}" size="30" /> <label for="key">Key
-				(bits only, max 64):</label><input id="key" name="key" th:value="${key}"
+				(bits only, max 64, try '1' for caesar-cipher):</label><input id="key" name="key" th:value="${key}"
 				size="30" />
 
 			<button type="submit">Compute</button>
@@ -63,6 +63,11 @@
 		<p th:if="${result!=null}">
 			CipherText (encrypted) Result (base64 value): <span
 				th:if="${resultHex!=null}" th:text="${resultBase64}"
+				style="border: 1px SOLID; padding: 5px; margin: 5px"></span>
+		</p>
+		<p th:if="${result!=null}">
+			CipherText (encrypted) Result (attempted UTF-8): <span
+				th:if="${resultUTF8String!=null}" th:text="${resultUTF8String}"
 				style="border: 1px SOLID; padding: 5px; margin: 5px"></span>
 		</p>
 		<p th:if="${result!=null}">

@@ -32,7 +32,8 @@ public class EncryptionController {
 	
 	/** A fixed list of encryption script resources.*/
 	private Map<String, Resource> encryptionScriptResources = 
-			 Map.of("one-time-pad", new ClassPathResource("scripts/encryption/one-time-pad.js"),
+			 Map.of("caesar-cipher", new ClassPathResource("scripts/encryption/caesar-cipher.js"),
+					 "one-time-pad", new ClassPathResource("scripts/encryption/one-time-pad.js"),
 					 "basic(none)", new ClassPathResource("scripts/encryption/basic.js"),
 					 "block-cipher", new ClassPathResource("scripts/encryption/block-cipher.js"));
 	
@@ -53,7 +54,7 @@ public class EncryptionController {
 		message = "Text";
 		//4 byte key.
 		key = "10111111000010001111111101110010";
-		chosenEncFunction = "basic(none)";
+		chosenEncFunction = "caesar-cipher";
 		
 		// Load the scripts
 		encryptionScripts = new HashMap<>(encryptionScriptResources.size());
@@ -167,6 +168,7 @@ public class EncryptionController {
 				log.info("Returned message as binary: {}",sb.toString());
 				model.addFlashAttribute("resultHex", EncryptionEngine.byteToHex(encBytes));
 				model.addFlashAttribute("resultBase64", EncryptionEngine.byteToBase64(encBytes));
+				model.addFlashAttribute("resultUTF8String", EncryptionEngine.attemptUTF8String(encBytes));
 				model.addFlashAttribute("resultBinary", EncryptionEngine.byteToBinaryString(encBytes));
 				model.addFlashAttribute("result", EncryptionEngine.byteToHex(message.getBytes()));
 

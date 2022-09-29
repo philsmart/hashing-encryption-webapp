@@ -2,6 +2,7 @@
 package uk.ac.cardiff.nsa.hashenc.engine;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,5 +42,15 @@ public class EncryptionEngine {
     public static String byteToBase64(byte[] encBytes) {
         return Base64.encodeBase64String(encBytes);
     }
+
+    /**
+     * Convert the bytes to UTF-8 w that makes sense or not.
+     * 
+     * @param encBytes the bytes to convert to a string
+     * @return the converted bytes as a string
+     */
+	public static Object attemptUTF8String(byte[] encBytes) {
+		return new String(encBytes, StandardCharsets.UTF_8);
+	}
 
 }
