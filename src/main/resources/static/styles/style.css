@@ -40,3 +40,34 @@ h1 {
 	background-color: #333;
 }
 
+.button {
+	background-color: #f44336;
+	color: white;
+	padding: 10px 20px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+}
+
+#keys {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#keys td, #keys th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#keys tr:nth-child(even){background-color: #f2f2f2;}
+
+#keys tr:hover {background-color: #ddd;}
+
+#keys th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #898989;
+  color: white;
+}

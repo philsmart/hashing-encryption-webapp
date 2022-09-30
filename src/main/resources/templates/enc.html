@@ -44,8 +44,8 @@
 
 			<label for="message">Message:</label><input id="message"
 				name="message" th:value="${message}" size="30" /> <label for="key">Key
-				(bits only, max 64 ** See Below):</label><input id="key" name="key" th:value="${key}"
-				size="30" />
+				(bits only, max 64 ** See Below):</label><input id="key" name="key"
+				th:value="${key}" size="30" />
 
 			<button type="submit">Compute</button>
 
@@ -81,43 +81,74 @@
 				style="border: 1px SOLID; padding: 5px; margin: 5px"></span>
 		</p>
 		<div id="game-container">
-			<p style="font-weight: bold;">Can you encrypt the pengiun</p>
-			<table style="margin-left:auto; margin-right:auto">
+			<p style="font-weight: bold;">Can you encrypt the penguin (note,
+				it will maintain its encrypted state, press reset to start over)</p>
+
+			<table style="margin-left: auto; margin-right: auto">
 				<tr>
-				<th>
-					Original
-				</th>
-				<th>
-					Encrypted
-				</th>
+					<th>Original</th>
+					<th>Encrypted</th>
 				</tr>
-			<tr>
-				<td><img  th:src="@{'data:image/jpeg;base64,'+${imageBase64Unencrypted}}" /></td>
-				<td><img th:if="${imageBase64Encrypted != null}"  th:src="@{'data:image/jpeg;base64,'+${imageBase64Encrypted}}" /></td>
-			</tr>
-		</table>
-			
+				<tr>
+					<td><img
+						th:src="@{'data:image/jpeg;base64,'+${imageBase64Unencrypted}}" /></td>
+					<td><img th:if="${imageBase64Encrypted != null}"
+						th:src="@{'data:image/jpeg;base64,'+${imageBase64Encrypted}}" />
+						<span th:if="${imageBase64Encrypted == null}">Nothing
+							encrypted</span></td>
+				</tr>
+				<tfoot>
+					<tr>
+						<td></td>
+						<td><a th:if="${imageBase64Encrypted != null}"
+							href="/enc-reset-encrypted-image" class="button">Reset
+								Encrypted Image</a></td>
+					</tr>
+				</tfoot>
+			</table>
+
 		</div>
-      				 
-      	
+
+		<div id="game-container">
+			<p style="font-weight: bold;">Keys To Try</p>
+			<table id="keys">
+				<tr>
+					<th>Cipher</th>
+					<th>Description</th>
+					<th>Example Keys</th>
+				</tr>
+				<tr>
+					<td>Caesar Cipher</td>
+					<td>The binary key is converted to a number which represents the 'shift' e.g. 1 is
+						converted to 1, 10 is converted to 2. You are limited to a max of
+						4, so 100 is max</td>
+					<td>[1], [10], [11], [100]</td>
+				</tr>
+				<tr>
+					<td>Block Cipher</td>
+					<td>The message has to be evenly divisible by
+						the key, e.g. if the message was 8 bits, the key would need to be 2, 4, or 8 bits so it leaves
+						no remainder when divided by. Remember, each character in the input message is 1 byte and so 8 bits. Therefore 'Text' 
+						has 4 bytes or 24 bits.</td>
+
+					<td>[10110110]</td>
+				</tr>
+				<tr>
+					<td>One-time-pad</td>
+					<td>The key has to be the same size (in bits) as the input
+						message. Hence this is not going to work with the image (too many
+						to enter)</td>
+
+					<td>[10111111000010001111111101110010]</td>
+				</tr>
+			</table>
+
+		</div>
 
 
 	</div>
-	
-	<div id="game-container">
-		<p style="font-weight: bold;">Keys To Try</p>
-		<table>
-			<tr>
-				<td>For Caesar Cipher, try keys:</td>
-				<td>[1], [10], [11], [100]</td>
-			</tr>
-			<tr>
-				<td>For other ciphers, try keys:</td>
-				<td>[10111111000010001111111101110010]...or something the size of the message or block size</td>
-			</tr>
-		</table>
-	
-	</div>
+
+
 
 
 
