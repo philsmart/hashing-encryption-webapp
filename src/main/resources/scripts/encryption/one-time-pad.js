@@ -1,16 +1,13 @@
-var cipherTextAsBytes = function encrypt(message, keyAsBytes){
-   var bytes = message.getBytes();
-   if (message.getBytes().length!=keyAsBytes.length){
+var cipherTextAsBytes = function encrypt(messageAsBytes, keyAsBytes){
+   if (messageAsBytes.length!=keyAsBytes.length){
       print("Key incompatible");
       return "".getBytes();
    }
-   for (var i=0; i<bytes.length; ++i) {
-        print("Before " + bytes[i]);
-        var b = bytes[i] ^ keyAsBytes[i];        
-        bytes[i] = b;
-        print("After: " + UInt8(bytes[i]));
+   for (var i=0; i<messageAsBytes.length; ++i) {       
+        var b = messageAsBytes[i] ^ keyAsBytes[i];        
+        messageAsBytes[i] = b;
     }    
-    return bytes;
+    return messageAsBytes;
 }
 
 var decodedMessage = function decrypt(messageAsBytes, keyAsBytes){

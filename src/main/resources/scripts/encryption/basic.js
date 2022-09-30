@@ -1,5 +1,5 @@
-var cipherTextAsBytes = function encrypt(message, keyAsBytes){
-   return message.getBytes();
+var cipherTextAsBytes = function encrypt(messageAsBytes, keyAsBytes){
+   return messageAsBytes;
 }
 
 var decodedMessage = function decrypt(messageAsBytes, key){

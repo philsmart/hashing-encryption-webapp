@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'uk.ac.cardiff.nsa'
-version = '0.0.1-SNAPSHOT'
+version = '1.0.0-SNAPSHOT'
 sourceCompatibility = '11'
 
 repositories {
@@ -16,6 +16,12 @@ apply plugin: 'java'
 apply plugin: 'io.spring.dependency-management'
 
 dependencies {
+	// https://mvnrepository.com/artifact/com.twelvemonkeys.imageio/imageio-core
+	implementation group: 'com.twelvemonkeys.imageio', name: 'imageio-core', version: '3.8.3'
+	implementation group: 'com.twelvemonkeys.imageio', name: 'imageio-jpeg', version: '3.8.3'
+	implementation group: 'com.twelvemonkeys.imageio', name: 'imageio-pnm', version: '3.8.3'
+	
+	
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'

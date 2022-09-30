@@ -1,4 +1,4 @@
-var cipherTextAsBytes = function encrypt(message, keyAsBytes) {
+var cipherTextAsBytes = function encrypt(messageAsBytes, keyAsBytes) {
 	if (keyAsBytes.length > 1) {
 		print("Caesar cipher key should be 1 byte");
 		return "".getBytes();
@@ -13,15 +13,11 @@ var cipherTextAsBytes = function encrypt(message, keyAsBytes) {
 		return "".getBytes();
 	}
 	print("Shift: " + shift);
-	var bytes = message.getBytes();
-	for (var i = 0; i < bytes.length; i = i + 1) {
-		print("Before " + bytes[i]);
-		var b = bytes[i] + shift;
-		bytes[i] = b;
-		print("After: " + UInt8(bytes[i]));
-
+	for (var i = 0; i < messageAsBytes.length; i = i + 1) {
+		var b = messageAsBytes[i] + shift;
+		messageAsBytes[i] = b;
 	}
-	return bytes;
+	return messageAsBytes;
 }
 
 

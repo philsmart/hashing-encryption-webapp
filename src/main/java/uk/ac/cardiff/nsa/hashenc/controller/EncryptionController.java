@@ -1,5 +1,7 @@
 package uk.ac.cardiff.nsa.hashenc.controller;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -8,7 +10,9 @@ import javax.script.ScriptException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import uk.ac.cardiff.nsa.hashenc.engine.EncryptionEngine;
 import uk.ac.cardiff.nsa.hashenc.engine.HashEngine;
+import uk.ac.cardiff.nsa.hashenc.engine.ImageEngine;
 import uk.ac.cardiff.nsa.hashenc.engine.ScriptHelper;
 
 /**
@@ -49,11 +54,15 @@ public class EncryptionController {
 	/** The name of the chosen encryption script.*/
 	private String chosenEncFunction;
 	
+	/** Helper for encrypting and decrypting images.*/
+	@Autowired
+	private ImageEngine imageEngine;
+	
 	/** Constructor.*/
 	public EncryptionController() {		
 		message = "Text";
-		//4 byte key.
-		key = "10111111000010001111111101110010";
+		// 0 key for default caesar, so no shift, no encryption
+		key = "0";
 		chosenEncFunction = "caesar-cipher";
 		
 		// Load the scripts
@@ -62,6 +71,7 @@ public class EncryptionController {
 			String resourceAsScript = ScriptHelper.loadScriptResourceToString(resource.getValue());
 			encryptionScripts.put(resource.getKey(), resourceAsScript);
 		}
+
 		
 	}
 
@@ -97,6 +107,8 @@ public class EncryptionController {
 		} else {
 			model.addAttribute("key", key);
 			model.addAttribute("message", message);
+			model.addAttribute("imageBase64Unencrypted", imageEngine.getRawOriginalImageBase64Encoded());
+			model.addAttribute("imageBase64Encrypted", imageEngine.getRawEncryptedImageBase64Encoded());
 			model.addAttribute("script", encryptionScripts.get(chosenEncFunction));
 			model.addAttribute("templateScripts", 
 					encryptionScripts.entrySet().stream().map(k -> k.getKey()).collect(Collectors.toList()));
@@ -154,8 +166,19 @@ public class EncryptionController {
 		log.info("Message in bytes {}",message.getBytes());
 		try {
 			
-			final Object encResult = ScriptHelper.runEncryptScript("cipherTextAsBytes", script, message,
+			final Object encResult = ScriptHelper.runEncryptScript("cipherTextAsBytes", script, message.getBytes(StandardCharsets.UTF_8),
 					EncryptionEngine.longToBytesIgnoreZeroBytes(keyAsLong));
+			
+			//Now run the image through the script
+			final byte[] imageBodyToEncrypt = imageEngine.getImageBytes();
+			final Object encResultImage = ScriptHelper.runEncryptScript("cipherTextAsBytes", script,imageBodyToEncrypt ,
+					EncryptionEngine.longToBytesIgnoreZeroBytes(keyAsLong));
+			
+			//log.info("{}", encResultImage);
+			if (encResultImage instanceof byte[]) {
+				log.info("Was input image equal to encrypted image (bytes): {}", Arrays.equals(imageBodyToEncrypt, (byte[])encResultImage));
+				imageEngine.saveImageConvertAndReload((byte[]) encResultImage, new FileSystemResource("encrypted.ppm"));
+			}
 			
 			
 			log.info("Result of encrypt script bytes: {}, {}", encResult, encResult.getClass());
@@ -171,6 +194,7 @@ public class EncryptionController {
 				model.addFlashAttribute("resultUTF8String", EncryptionEngine.attemptUTF8String(encBytes));
 				model.addFlashAttribute("resultBinary", EncryptionEngine.byteToBinaryString(encBytes));
 				model.addFlashAttribute("result", EncryptionEngine.byteToHex(message.getBytes()));
+				model.addFlashAttribute("imageBase64Encrypted", imageEngine.getRawEncryptedImageBase64Encoded());
 
 				final Object decryptResult = ScriptHelper.runEncryptScript("decodedMessage", script, encBytes, 
 				        EncryptionEngine.longToBytesIgnoreZeroBytes(keyAsLong));
