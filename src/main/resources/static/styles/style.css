@@ -49,6 +49,10 @@ h1 {
 	display: inline-block;
 }
 
+th, td {
+  padding: 15px;
+}
+
 #keys {
   font-family: Arial, Helvetica, sans-serif;
   border-collapse: collapse;

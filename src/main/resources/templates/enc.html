@@ -33,7 +33,7 @@
 		</form>
 		<form th:action="@{/enc-update-script}" method="post">
 
-			<textarea id="script" name="script" rows="30" cols="70"
+			<textarea id="script" name="script" rows="30" cols="70" style="width:100%"
 				th:inline="text">[[${script}]]</textarea>
 			<p>
 				<button type="submit" style="width: 25%">Save</button>
@@ -88,6 +88,7 @@
 				<tr>
 					<th>Original</th>
 					<th>Encrypted</th>
+					<th>Decrypted</th>
 				</tr>
 				<tr>
 					<td><img
@@ -96,6 +97,10 @@
 						th:src="@{'data:image/jpeg;base64,'+${imageBase64Encrypted}}" />
 						<span th:if="${imageBase64Encrypted == null}">Nothing
 							encrypted</span></td>
+					<td><img th:if="${imageBase64Decrypted != null}"
+						th:src="@{'data:image/jpeg;base64,'+${imageBase64Decrypted}}" />
+						<span th:if="${imageBase64Decrypted == null}">Nothing
+							decrypted</span></td>
 				</tr>
 				<tfoot>
 					<tr>

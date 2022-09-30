@@ -49,8 +49,11 @@ public class ImageEngine {
     /** The base64 version of the image to show before encryption. */
     private String rawOriginalImageBase64Encoded;
 
-    /** The raw bytes of the save encrypted imaged. */
+    /** The raw bytes of the encrypted imaged. */
     private String rawEncryptedImageBase64Encoded;
+
+    /** The raw bytes of the decrypted imaged. */
+    private String rawDecryptedImageBase64Encoded;
 
     /**
      * The raw bytes of the uncompressed, unencrypted image, without the header, ready for encryption.
@@ -67,6 +70,10 @@ public class ImageEngine {
             log.error("Could not load image", e);
         }
 
+    }
+
+    public String getRawDecryptedImageBase64Encoded() {
+        return rawDecryptedImageBase64Encoded;
     }
 
     public void convertImageToFormat(final FileSystemResource inImage, final FileSystemResource outImage,
@@ -89,7 +96,7 @@ public class ImageEngine {
     }
 
     /**
-     * Get a defensive copy of the loaded image (body only, no header) bytes.
+     * Get a live version of the loaded image (body only, no header) bytes.
      * 
      * @return the image body as bytes
      */
@@ -103,11 +110,29 @@ public class ImageEngine {
      * 
      * @param imageBytes the image body to save.
      */
-    public void convertAndReload(final byte[] imageBytes) {
+    public void convertAndReloadEncrypted(final byte[] imageBytes) {
         try {
             final byte[] combinedWithHeader = addHeaderToBytes(imageBytes);
             final byte[] convertedImage = convertImageToFormatInMemory(combinedWithHeader, "JPEG");
             rawEncryptedImageBase64Encoded = new String(Base64.encodeBase64(convertedImage), "UTF-8");
+
+        } catch (final Exception e) {
+            log.warn("Could not save image", e);
+        }
+
+    }
+
+    /**
+     * Combine the image body with the fixed image header, convert it in-memory to a JPEG and set the
+     * rawDecryptedImageBase64Encoded value to the base64 of the JPEG version.
+     * 
+     * @param imageBytes the image body to save.
+     */
+    public void convertAndReloadDecrypted(final byte[] imageBytes) {
+        try {
+            final byte[] combinedWithHeader = addHeaderToBytes(imageBytes);
+            final byte[] convertedImage = convertImageToFormatInMemory(combinedWithHeader, "JPEG");
+            rawDecryptedImageBase64Encoded = new String(Base64.encodeBase64(convertedImage), "UTF-8");
 
         } catch (final Exception e) {
             log.warn("Could not save image", e);
@@ -191,6 +216,7 @@ public class ImageEngine {
         try {
             imageBytes = convertImageToByteArray(imageToEncrypt);
             rawEncryptedImageBase64Encoded = null;
+            rawDecryptedImageBase64Encoded = null;
         } catch (final Exception e) {
             log.error("Unable to reset tux image!", e);
         }

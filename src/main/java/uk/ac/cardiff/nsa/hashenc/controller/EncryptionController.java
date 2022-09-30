@@ -2,7 +2,6 @@
 package uk.ac.cardiff.nsa.hashenc.controller;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -41,7 +40,8 @@ public class EncryptionController {
             Map.of("caesar-cipher", new ClassPathResource("scripts/encryption/caesar-cipher.js"), "one-time-pad",
                     new ClassPathResource("scripts/encryption/one-time-pad.js"), "basic(none)",
                     new ClassPathResource("scripts/encryption/basic.js"), "block-cipher",
-                    new ClassPathResource("scripts/encryption/block-cipher.js"));
+                    new ClassPathResource("scripts/encryption/block-cipher.js"), "block-cipher-chaining",
+                    new ClassPathResource("scripts/encryption/block-cipher-chaining.js"));
 
     /** The loaded encryption scripts. Loaded from the encryptionScriptResources on init. */
     private final Map<String, String> encryptionScripts;
@@ -109,6 +109,7 @@ public class EncryptionController {
             model.addAttribute("message", message);
             model.addAttribute("imageBase64Unencrypted", imageEngine.getRawOriginalImageBase64Encoded());
             model.addAttribute("imageBase64Encrypted", imageEngine.getRawEncryptedImageBase64Encoded());
+            model.addAttribute("imageBase64Decrypted", imageEngine.getRawDecryptedImageBase64Encoded());
             model.addAttribute("script", encryptionScripts.get(chosenEncFunction));
             model.addAttribute("templateScripts",
                     encryptionScripts.entrySet().stream().map(Entry::getKey).collect(Collectors.toList()));
@@ -177,15 +178,11 @@ public class EncryptionController {
 
             // Now run the image through the script
             log.info("Encrypting the input image...");
-            final byte[] imageBodyToEncrypt = imageEngine.getImageBytes();
-            final Object encResultImage = ScriptHelper.runEncryptScript("cipherTextAsBytes", script, imageBodyToEncrypt,
-                    EncryptionEngine.longToBytesIgnoreZeroBytes(keyAsLong));
+            final Object encResultImage = ScriptHelper.runEncryptScript("cipherTextAsBytes", script,
+                    imageEngine.getImageBytes(), EncryptionEngine.longToBytesIgnoreZeroBytes(keyAsLong));
 
-            // log.info("{}", encResultImage);
             if (encResultImage instanceof byte[]) {
-                log.info("Was input image equal to encrypted image (bytes): {}",
-                        Arrays.equals(imageBodyToEncrypt, (byte[]) encResultImage));
-                imageEngine.convertAndReload((byte[]) encResultImage);
+                imageEngine.convertAndReloadEncrypted((byte[]) encResultImage);
             }
 
             log.info("Result of encrypt script bytes: {}, {}", encResult, encResult.getClass());
@@ -203,11 +200,22 @@ public class EncryptionController {
                 model.addFlashAttribute("result", EncryptionEngine.byteToHex(message.getBytes()));
                 model.addFlashAttribute("imageBase64Encrypted", imageEngine.getRawEncryptedImageBase64Encoded());
 
-                final Object decryptResult = ScriptHelper.runEncryptScript("decodedMessage", script, encBytes,
+                log.info("Decrypting the input text...");
+                final Object decryptResult = ScriptHelper.runEncryptScript("decodedMessageAsBytes", script, encBytes,
                         EncryptionEngine.longToBytesIgnoreZeroBytes(keyAsLong));
 
-                log.info("Result of decrypt script: {}, {}", decryptResult, decryptResult.getClass());
-                model.addFlashAttribute("decryptedMessage", decryptResult);
+                if (decryptResult instanceof byte[]) {
+                    log.info("Result of decrypt script: {}, {}", decryptResult, decryptResult.getClass());
+                    model.addFlashAttribute("decryptedMessage",
+                            new String((byte[]) decryptResult, StandardCharsets.UTF_8));
+                }
+
+                log.info("Decrypting the input image...");
+                final Object decResultImage = ScriptHelper.runEncryptScript("decodedMessageAsBytes", script,
+                        imageEngine.getImageBytes(), EncryptionEngine.longToBytesIgnoreZeroBytes(keyAsLong));
+                if (decResultImage instanceof byte[]) {
+                    imageEngine.convertAndReloadDecrypted((byte[]) decResultImage);
+                }
 
             }
 
