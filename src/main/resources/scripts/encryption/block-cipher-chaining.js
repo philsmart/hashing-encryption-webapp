@@ -3,44 +3,50 @@ var cipherTextAsBytes = function encrypt(messageAsBytes, keyAsBytes) {
 		print("Key incompatible");
 		return "".getBytes();
 	}
-	var blockSize = keyAsBytes.length;
+	if (keyAsBytes.length != 1) {
+		print("Key incompatible, only support 8 bit keys");
+		return "".getBytes();
+	}
+	// 8 bit keys, so fix the block to 8 bits or 1 byte, so byte for byte
+	var blockSize = 1;
+	// IV is a byte between 0 and 255 (00000000 and 11111111)
+	var iv = 100;
 	for (var i = 0; i < messageAsBytes.length; i = i + blockSize) {
-		for (var j = 0; j < blockSize; j++) {
-			var b = messageAsBytes[i + j] ^ keyAsBytes[j];
-			messageAsBytes[i + j] = b;
+		if (i == 0){
+			var b = messageAsBytes[i] ^ keyAsBytes[0] ^ iv;
+			messageAsBytes[i] = b;
+		} else{
+			var b = keyAsBytes[0]^ messageAsBytes[i] ^ messageAsBytes[i-1];
+			messageAsBytes[i] = b;
 		}
-		if (i >= blockSize) {
-			for (var j = 0; j < blockSize; j++) {
-				var b = messageAsBytes[(i - blockSize) + j] ^ messageAsBytes[i + j];
-				messageAsBytes[i + j] = b;
-			}
-		}
-
 	}
 	return messageAsBytes;
 }
 
-var decodedMessage = function decrypt(messageAsBytes, keyAsBytes) {
+
+// Often the same operate to decrypt as encrypt when XOR is involved
+var decodedMessageAsBytes = function decrypt(messageAsBytes, keyAsBytes) {
 	if (messageAsBytes.length % keyAsBytes.length != 0) {
 		print("Key incompatible");
 		return "".getBytes();
 	}
-	var blockSize = keyAsBytes.length;
-	var str = '';
+	if (keyAsBytes.length != 1) {
+		print("Key incompatible, only support 8 bit keys");
+		return "".getBytes();
+	}
+	// 8 bit keys, so fix the block to 8 bits or 1 byte, so byte for byte
+	var blockSize = 1;
+	var iv = 100;
 	for (var i = 0; i < messageAsBytes.length; i = i + blockSize) {
-		for (var j = 0; j < blockSize; j++) {
-			var decryptedByte = messageAsBytes[i + j] ^ keyAsBytes[j];
-			str += String.fromCharCode(decryptedByte);
-		}
-		if (i >= blockSize) {
-			for (var j = 0; j < blockSize; j++) {
-				var b = messageAsBytes[(i - blockSize) + j] ^ messageAsBytes[i + j];
-				messageAsBytes[i + j] = b;
-			}
+		if (i == 0){
+			var b = messageAsBytes[i] ^ keyAsBytes[0] ^ iv;
+			messageAsBytes[i] = b;
+		} else{
+			var b =  keyAsBytes[0]^ messageAsBytes[i] ^ messageAsBytes[i-1];
+			messageAsBytes[i] = b;
 		}
 	}
-
-	return str;
+	return messageAsBytes;
 }
 
 var UInt8 = function(value) {

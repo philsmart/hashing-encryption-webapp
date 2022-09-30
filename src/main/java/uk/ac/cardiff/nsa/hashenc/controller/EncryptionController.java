@@ -40,7 +40,7 @@ public class EncryptionController {
             Map.of("caesar-cipher", new ClassPathResource("scripts/encryption/caesar-cipher.js"), "one-time-pad",
                     new ClassPathResource("scripts/encryption/one-time-pad.js"), "basic(none)",
                     new ClassPathResource("scripts/encryption/basic.js"), "block-cipher",
-                    new ClassPathResource("scripts/encryption/block-cipher.js"), "block-cipher-chaining",
+                    new ClassPathResource("scripts/encryption/block-cipher.js"), "block-cipher-chaining (Experimental)",
                     new ClassPathResource("scripts/encryption/block-cipher-chaining.js"));
 
     /** The loaded encryption scripts. Loaded from the encryptionScriptResources on init. */
