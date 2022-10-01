@@ -9,17 +9,12 @@ var cipherTextAsBytes = function encrypt(messageAsBytes, keyAsBytes) {
 	}
 	// 8 bit keys, so fix the block to 8 bits or 1 byte, so byte for byte
 	var blockSize = 1;
-	// IV is a byte between 0 and 255 (00000000 and 11111111). The IV MUST normally
+	// nonce=iv which is a byte between 0 and 255 (00000000 and 11111111). The IV MUST normally
 	// Change for each enc operation, so this is flawed.
-	var iv = 100;
+	var nonce = 100;
+	// Use the block index as the counter (does not need previous block, so parallelizable)
 	for (var i = 0; i < messageAsBytes.length; i = i + blockSize) {
-		if (i == 0){
-			// First block you mix (XOR) with the IV so same starting blocks give different cipher texts
-			messageAsBytes[i] = messageAsBytes[i] ^ keyAsBytes[0] ^ iv;
-		} else{
-			// Then XOR current plaintext with previous cipher text with key
-			messageAsBytes[i] = keyAsBytes[0] ^ (messageAsBytes[i]) ^ messageAsBytes[i-1];
-		}
+		messageAsBytes[i] = i ^ nonce ^ messageAsBytes[i] ^ keyAsBytes[0];
 	}
 	return messageAsBytes;
 }
@@ -38,14 +33,10 @@ var decodedMessageAsBytes = function decrypt(encryptedMessageAsBytes, keyAsBytes
 	// 8 bit keys, so fix the block to 8 bits or 1 byte, so byte for byte
 	var blockSize = 1;
 	// Here is the IV again - the same as for encryption - is not secret.
-	var iv = 100;
-	for (var i = 0; i < encryptedMessageAsBytes.length; i = i + blockSize) {
-		if (i == 0){
-			decryptedArray[i] = encryptedMessageAsBytes[i] ^ keyAsBytes[0] ^ iv;
-		} else{
-			// XOR current ciphertext with previous cipher text with key
-			decryptedArray[i] =  keyAsBytes[0] ^ (encryptedMessageAsBytes[i]) ^ encryptedMessageAsBytes[i-1];
-		}
+	var nonce = 100;
+	for (var i = 0; i < encryptedMessageAsBytes.length; i = i + blockSize) {		
+		decryptedArray[i] = i ^ nonce ^ encryptedMessageAsBytes[i] ^ keyAsBytes[0];
+
 	}
 	return decryptedArray;
 }
