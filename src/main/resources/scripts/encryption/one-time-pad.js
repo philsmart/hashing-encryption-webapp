@@ -10,18 +10,17 @@ var cipherTextAsBytes = function encrypt(messageAsBytes, keyAsBytes){
     return messageAsBytes;
 }
 
-var decodedMessageAsBytes = function decrypt(messageAsBytes, keyAsBytes){
+var decodedMessageAsBytes = function decrypt(messageAsBytes, keyAsBytes, decryptedArray){
    if (messageAsBytes.length!=keyAsBytes.length){
       print("Key incompatible");
       return "".getBytes();
    }
    for (var i=0; i < messageAsBytes.length; ++i) {
         // convert signed int in the byte to unsigned before XOR
-        var decryptedByte = UInt8(messageAsBytes[i]) ^ UInt8(keyAsBytes[i]);
-        messageAsBytes[i] = decryptedByte;
+        decryptedArray[i] = UInt8(messageAsBytes[i]) ^ UInt8(keyAsBytes[i]);
         
     }
-   return messageAsBytes;
+   return decryptedArray;
 }
 
 var UInt8 = function (value) {

@@ -22,7 +22,7 @@ var cipherTextAsBytes = function encrypt(messageAsBytes, keyAsBytes) {
 
 
 
-var decodedMessageAsBytes = function decrypt(messageAsBytes, keyAsBytes) {
+var decodedMessageAsBytes = function decrypt(messageAsBytes, keyAsBytes, decryptedArray) {
 	if (keyAsBytes.length > 1) {
 		print("Caesar cipher key should be 1 byte");
 		return "".getBytes();
@@ -38,10 +38,9 @@ var decodedMessageAsBytes = function decrypt(messageAsBytes, keyAsBytes) {
 	}
 	print("Shift back: " + shift);
 	for (var i = 0; i < messageAsBytes.length; i = i + 1) {
-		var decryptedByte = messageAsBytes[i] - shift;
-		messageAsBytes[i] = decryptedByte;
+	    decryptedArray[i] = messageAsBytes[i] - shift;
 	}
-	return messageAsBytes;
+	return decryptedArray;
 }
 
 var UInt8 = function(value) {

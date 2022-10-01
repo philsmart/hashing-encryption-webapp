@@ -63,8 +63,8 @@ public class EncryptionController {
     public EncryptionController() {
         message = "Text";
         // 0 key for default caesar, so no shift, no encryption
-        key = "0";
-        chosenEncFunction = "caesar-cipher";
+        key = "10110110";
+        chosenEncFunction = "block-cipher-chaining (Experimental)";
 
         // Load the scripts
         encryptionScripts = new HashMap<>(encryptionScriptResources.size());
@@ -202,17 +202,21 @@ public class EncryptionController {
 
                 log.info("Decrypting the input text...");
                 final Object decryptResult = ScriptHelper.runEncryptScript("decodedMessageAsBytes", script, encBytes,
-                        EncryptionEngine.longToBytesIgnoreZeroBytes(keyAsLong));
+                        EncryptionEngine.longToBytesIgnoreZeroBytes(keyAsLong),
+                        new byte[imageEngine.getImageBytes().length]);
 
-                if (decryptResult instanceof byte[]) {
-                    log.info("Result of decrypt script: {}, {}", decryptResult, decryptResult.getClass());
+                //log.info("Result of decrypt script: {}, {}", decryptResult, decryptResult.getClass());
+                if (decryptResult instanceof byte[]) {                    
                     model.addFlashAttribute("decryptedMessage",
                             new String((byte[]) decryptResult, StandardCharsets.UTF_8));
                 }
 
                 log.info("Decrypting the input image...");
                 final Object decResultImage = ScriptHelper.runEncryptScript("decodedMessageAsBytes", script,
-                        imageEngine.getImageBytes(), EncryptionEngine.longToBytesIgnoreZeroBytes(keyAsLong));
+                        imageEngine.getImageBytes(), EncryptionEngine.longToBytesIgnoreZeroBytes(keyAsLong),
+                        new byte[imageEngine.getImageBytes().length]);
+                
+                //log.info("Result of decrypt image:{},  {}",decResultImage, decResultImage.getClass());
                 if (decResultImage instanceof byte[]) {
                     imageEngine.convertAndReloadDecrypted((byte[]) decResultImage);
                 }

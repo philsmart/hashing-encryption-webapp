@@ -154,7 +154,7 @@ public class ImageEngine {
         final byte[] header = PPM_HEADER.getBytes(StandardCharsets.UTF_8);
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             outputStream.write(header);
-            outputStream.write(imageBytes);
+            outputStream.write(imageBody);
             return outputStream.toByteArray();
         }
 

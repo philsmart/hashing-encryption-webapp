@@ -9,14 +9,17 @@ var cipherTextAsBytes = function encrypt(messageAsBytes, keyAsBytes) {
 	}
 	// 8 bit keys, so fix the block to 8 bits or 1 byte, so byte for byte
 	var blockSize = 1;
-	// IV is a byte between 0 and 255 (00000000 and 11111111)
+	// IV is a byte between 0 and 255 (00000000 and 11111111). The IV MUST normally
+	// Change for each enc operation, so this is flawed.
 	var iv = 100;
 	for (var i = 0; i < messageAsBytes.length; i = i + blockSize) {
 		if (i == 0){
+			// First block you mix (XOR) with the IV so same starting blocks give different cipher texts
 			var b = messageAsBytes[i] ^ keyAsBytes[0] ^ iv;
 			messageAsBytes[i] = b;
 		} else{
-			var b = keyAsBytes[0]^ messageAsBytes[i] ^ messageAsBytes[i-1];
+			// Then XOR current plaintext with previous cipher text with key
+			var b = keyAsBytes[0] ^ (messageAsBytes[i]) ^ messageAsBytes[i-1];
 			messageAsBytes[i] = b;
 		}
 	}
@@ -24,8 +27,8 @@ var cipherTextAsBytes = function encrypt(messageAsBytes, keyAsBytes) {
 }
 
 
-// Often the same operate to decrypt as encrypt when XOR is involved
-var decodedMessageAsBytes = function decrypt(messageAsBytes, keyAsBytes) {
+// Often the same operation to decrypt as encrypt when XOR is involved
+var decodedMessageAsBytes = function decrypt(messageAsBytes, keyAsBytes, decryptedArray) {
 	if (messageAsBytes.length % keyAsBytes.length != 0) {
 		print("Key incompatible");
 		return "".getBytes();
@@ -36,19 +39,17 @@ var decodedMessageAsBytes = function decrypt(messageAsBytes, keyAsBytes) {
 	}
 	// 8 bit keys, so fix the block to 8 bits or 1 byte, so byte for byte
 	var blockSize = 1;
+	// Here is the IV again - the same as for encryption - is not secret.
 	var iv = 100;
 	for (var i = 0; i < messageAsBytes.length; i = i + blockSize) {
 		if (i == 0){
 			var b = messageAsBytes[i] ^ keyAsBytes[0] ^ iv;
-			messageAsBytes[i] = b;
+			decryptedArray[i] = b;
 		} else{
-			var b =  keyAsBytes[0]^ messageAsBytes[i] ^ messageAsBytes[i-1];
-			messageAsBytes[i] = b;
+			// XOR current ciphertext with previous cipher text with key
+			var b =  keyAsBytes[0] ^ (messageAsBytes[i]) ^ messageAsBytes[i-1];
+			decryptedArray[i] = b;
 		}
 	}
-	return messageAsBytes;
+	return decryptedArray;
 }
-
-var UInt8 = function(value) {
-	return (value & 0xFF);
-};
