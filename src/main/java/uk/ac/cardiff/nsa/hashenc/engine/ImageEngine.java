@@ -45,6 +45,8 @@ public class ImageEngine {
 
     /** The original image to show before encryption. */
     private final Resource originalImage = new ClassPathResource("tux.jpg");
+    
+    	//TODO make below session scoped
 
     /** The base64 version of the image to show before encryption. */
     private String rawOriginalImageBase64Encoded;
@@ -76,6 +78,15 @@ public class ImageEngine {
         return rawDecryptedImageBase64Encoded;
     }
 
+    /**
+     * Convert the image in the inImage to the format specified, and save to the outImage.
+     * 
+     * @param inImage the input image to convert
+     * @param outImage the file resource to save the converted image to
+     * @param format the foramt to convert to e.g. "JPEG". 
+     * 
+     * @throws IOException on error to load, convert, or save the file
+     */
     public void convertImageToFormat(final FileSystemResource inImage, final FileSystemResource outImage,
             final String format) throws IOException {
         log.debug("Saving {} to file: {}", format, outImage.getFilename());
@@ -84,6 +95,16 @@ public class ImageEngine {
 
     }
 
+    /**
+     * Convert the input image bytes in assumed PPM format into the format given, and return as bytes.
+     * 
+     * @param imageBytes the image, in PPM format, to convert
+     * @param format the format to convert to
+     * 
+     * @return the converted image in bytes
+     * 
+     * @throws IOException on error.
+     */
     public byte[] convertImageToFormatInMemory(final byte[] imageBytes, final String format) throws IOException {
         log.debug("Converting image in-memory to format {}", format);
         final BufferedImage image = ImageIO.read(new ByteArrayImageInputStream(imageBytes));

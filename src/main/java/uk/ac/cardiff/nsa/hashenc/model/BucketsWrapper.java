@@ -3,8 +3,6 @@ package uk.ac.cardiff.nsa.hashenc.model;
 import java.util.Collections;
 import java.util.List;
 
-
-
 public class BucketsWrapper {
     
     private int[] buckets;

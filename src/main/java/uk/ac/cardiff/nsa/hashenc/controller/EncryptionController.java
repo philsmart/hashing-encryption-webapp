@@ -17,10 +17,13 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import uk.ac.cardiff.nsa.hashenc.context.UserContext;
 import uk.ac.cardiff.nsa.hashenc.engine.EncryptionEngine;
 import uk.ac.cardiff.nsa.hashenc.engine.HashEngine;
 import uk.ac.cardiff.nsa.hashenc.engine.ImageEngine;
@@ -31,6 +34,7 @@ import uk.ac.cardiff.nsa.hashenc.engine.ScriptHelper;
  * between users.
  */
 @Controller
+@SessionAttributes("userContext")
 public class EncryptionController {
 
 	/** Class logger. */
@@ -50,26 +54,14 @@ public class EncryptionController {
 	 * init.
 	 */
 	private final Map<String, String> encryptionScripts;
-
-	/** The current message. */
-	private String message;
-
-	/** The current key. */
-	private String key;
-
-	/** The name of the chosen encryption script. */
-	private String chosenEncFunction;
-
-	/** Helper for encrypting and decrypting images. */
+	
+	/** Engine for dealing with images. */
 	@Autowired
 	private ImageEngine imageEngine;
 
+
 	/** Constructor. */
 	public EncryptionController() {
-		message = "Text";
-		// 0 key for default caesar, so no shift, no encryption
-		key = "0";
-		chosenEncFunction = "caesar-cipher";
 
 		// Load the scripts
 		encryptionScripts = new HashMap<>(encryptionScriptResources.size());
@@ -77,8 +69,18 @@ public class EncryptionController {
 			final String resourceAsScript = ScriptHelper.loadScriptResourceToString(resource.getValue());
 			encryptionScripts.put(resource.getKey(), resourceAsScript);
 		}
-
 	}
+	
+	/**
+	 * Allow spring to create a UserContext and place it inside the HTTP Session for use
+	 * by the user (JSESSIONID) of this application.
+	 * 
+	 * @return the user context.
+	 */
+	@ModelAttribute("userContext")
+	 public UserContext constructUserContext() {
+	  return new UserContext();
+	 }
 
 	/**
 	 * Set the encryption function (or template script) to use
@@ -90,10 +92,9 @@ public class EncryptionController {
 	 */
 	@PostMapping("/set-enc-template")
 	public String updateTemplateScript(@RequestParam("templateScript") final String template,
-			final RedirectAttributes model) {
+			final RedirectAttributes model, @ModelAttribute("userContext") UserContext userCtx) {
 		log.debug("setting template: " + template);
-		chosenEncFunction = template;
-
+		userCtx.setChosenEncFunction(template);
 		return "redirect:enc";
 	}
 
@@ -105,20 +106,21 @@ public class EncryptionController {
 	 * @return the 'enc' page
 	 */
 	@GetMapping("/enc")
-	public String getEncryptionPage(final Model model) {
-		if ((encryptionScripts.get(chosenEncFunction) == null) || encryptionScripts.get(chosenEncFunction).isEmpty()) {
+	public String getEncryptionPage(final Model model, @ModelAttribute("userContext") UserContext userCtx) {
+		if ((encryptionScripts.get(userCtx.getChosenEncFunction()) == null) || 
+				encryptionScripts.get(userCtx.getChosenEncFunction()).isEmpty()) {
 			log.warn("Script was not choosen");
-			model.addAttribute("script", encryptionScripts.get(chosenEncFunction));
+			model.addAttribute("script", encryptionScripts.get(userCtx.getChosenEncFunction()));
 		} else {
-			model.addAttribute("key", key);
-			model.addAttribute("message", message);
+			model.addAttribute("key", userCtx.getEncKey());
+			model.addAttribute("message", userCtx.getEncMessage());
 			model.addAttribute("imageBase64Unencrypted", imageEngine.getRawOriginalImageBase64Encoded());
 			model.addAttribute("imageBase64Encrypted", imageEngine.getRawEncryptedImageBase64Encoded());
 			model.addAttribute("imageBase64Decrypted", imageEngine.getRawDecryptedImageBase64Encoded());
-			model.addAttribute("script", encryptionScripts.get(chosenEncFunction));
+			model.addAttribute("script", encryptionScripts.get(userCtx.getChosenEncFunction()));
 			model.addAttribute("templateScripts",
 					encryptionScripts.entrySet().stream().map(Entry::getKey).collect(Collectors.toList()));
-			model.addAttribute("chosenTemplate", chosenEncFunction);
+			model.addAttribute("chosenTemplate", userCtx.getChosenEncFunction());
 
 		}
 		return "enc";
@@ -129,12 +131,14 @@ public class EncryptionController {
 	 * 
 	 * @param scriptInput the new encryption function
 	 * @param model       the model to store the results in
+	 * @param userCtx the user context from the HTTP Session
 	 * 
 	 * @return a redirect to the 'enc' page
 	 */
 	@PostMapping("/enc-update-script")
-	public String updateScript(@RequestParam("script") final String scriptInput, final RedirectAttributes model) {
-		encryptionScripts.put(chosenEncFunction, scriptInput);
+	public String updateScript(@RequestParam("script") final String scriptInput, final RedirectAttributes model,
+			@ModelAttribute("userContext") UserContext userCtx) {
+		encryptionScripts.put(userCtx.getChosenEncFunction(), scriptInput);
 		return "redirect:enc";
 	}
 
@@ -155,7 +159,7 @@ public class EncryptionController {
 	 */
 	@PostMapping("/encrypt")
 	public String enc(@RequestParam("message") final String message, @RequestParam("key") final String key,
-			final RedirectAttributes model) {
+			final RedirectAttributes model, @ModelAttribute("userContext") UserContext userCtx) {
 
 		if (!key.matches("[01]+")) {
 			log.error("Key must be binary (a 1 or a 0)");
@@ -164,10 +168,10 @@ public class EncryptionController {
 			model.addFlashAttribute("decryptedMessage", "KEY IS NOT BINARY (only 1 or 0 allowed)");
 			return "redirect:enc";
 		}
-		final String script = encryptionScripts.get(chosenEncFunction);
+		final String script = encryptionScripts.get(userCtx.getChosenEncFunction());
 		log.info("Message '{}', Script \n{}", message, script);
-		this.key = key;
-		this.message = message;
+		userCtx.setEncKey(key);
+		userCtx.setEncMessage(message);
 
 		// assume binary string and parse to long.
 		final Long keyAsLong = Long.parseLong(key, 2);
@@ -210,8 +214,6 @@ public class EncryptionController {
 						EncryptionEngine.longToBytesIgnoreZeroBytes(keyAsLong),
 						new byte[imageEngine.getImageBytes().length]);
 
-				// log.info("Result of decrypt script: {}, {}", decryptResult,
-				// decryptResult.getClass());
 				if (decryptResult instanceof byte[]) {
 					model.addFlashAttribute("decryptedMessage",
 							new String((byte[]) decryptResult, StandardCharsets.UTF_8));
@@ -222,8 +224,6 @@ public class EncryptionController {
 						imageEngine.getImageBytes(), EncryptionEngine.longToBytesIgnoreZeroBytes(keyAsLong),
 						new byte[imageEngine.getImageBytes().length]);
 
-				// log.info("Result of decrypt image:{}, {}",decResultImage,
-				// decResultImage.getClass());
 				if (decResultImage instanceof byte[]) {
 					imageEngine.convertAndReloadDecrypted((byte[]) decResultImage);
 				}
