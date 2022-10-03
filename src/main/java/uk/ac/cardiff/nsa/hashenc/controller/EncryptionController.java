@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import uk.ac.cardiff.nsa.hashenc.context.UserContext;
+import uk.ac.cardiff.nsa.hashenc.context.UserEncryptionContext;
 import uk.ac.cardiff.nsa.hashenc.engine.EncryptionEngine;
 import uk.ac.cardiff.nsa.hashenc.engine.HashEngine;
 import uk.ac.cardiff.nsa.hashenc.engine.ImageEngine;
@@ -37,7 +37,7 @@ import uk.ac.cardiff.nsa.hashenc.engine.ScriptHelper;
  * </p>
  */
 @Controller
-@SessionAttributes("userContext")
+@SessionAttributes("userEncryptionContext")
 public class EncryptionController {
 
     /** Class logger. */
@@ -78,9 +78,9 @@ public class EncryptionController {
      * 
      * @return the user context.
      */
-    @ModelAttribute("userContext")
-    public UserContext constructUserContext() {
-        final UserContext userContext = new UserContext();
+    @ModelAttribute("userEncryptionContext")
+    public UserEncryptionContext constructUserContext() {
+        final UserEncryptionContext userContext = new UserEncryptionContext();
         imageEngine.loadUserContext(userContext);
         return userContext;
     }
@@ -95,7 +95,8 @@ public class EncryptionController {
      */
     @PostMapping("/set-enc-template")
     public String updateTemplateScript(@RequestParam("templateScript") final String template,
-            final RedirectAttributes model, @ModelAttribute("userContext") final UserContext userCtx) {
+            final RedirectAttributes model,
+            @ModelAttribute("userEncryptionContext") final UserEncryptionContext userCtx) {
         log.debug("setting template: " + template);
         userCtx.setChosenEncFunction(template);
         return "redirect:enc";
@@ -109,7 +110,8 @@ public class EncryptionController {
      * @return the 'enc' page
      */
     @GetMapping("/enc")
-    public String getEncryptionPage(final Model model, @ModelAttribute("userContext") final UserContext userCtx) {
+    public String getEncryptionPage(final Model model,
+            @ModelAttribute("userEncryptionContext") final UserEncryptionContext userCtx) {
         if ((encryptionScripts.get(userCtx.getChosenEncFunction()) == null)
                 || encryptionScripts.get(userCtx.getChosenEncFunction()).isEmpty()) {
             log.warn("Script was not choosen");
@@ -140,13 +142,14 @@ public class EncryptionController {
      */
     @PostMapping("/enc-update-script")
     public String updateScript(@RequestParam("script") final String scriptInput, final RedirectAttributes model,
-            @ModelAttribute("userContext") final UserContext userCtx) {
+            @ModelAttribute("userEncryptionContext") final UserEncryptionContext userCtx) {
         encryptionScripts.put(userCtx.getChosenEncFunction(), scriptInput);
         return "redirect:enc";
     }
 
     @GetMapping("/enc-reset-encrypted-image")
-    public String resetEncryptedImageAndReload(@ModelAttribute("userContext") final UserContext userCtx) {
+    public String
+            resetEncryptedImageAndReload(@ModelAttribute("userEncryptionContext") final UserEncryptionContext userCtx) {
         imageEngine.resetImageEncryption(userCtx);
         return "redirect:enc";
     }
@@ -162,7 +165,8 @@ public class EncryptionController {
      */
     @PostMapping("/encrypt")
     public String enc(@RequestParam("message") final String message, @RequestParam("key") final String key,
-            final RedirectAttributes model, @ModelAttribute("userContext") final UserContext userCtx) {
+            final RedirectAttributes model,
+            @ModelAttribute("userEncryptionContext") final UserEncryptionContext userCtx) {
 
         if (!key.matches("[01]+")) {
             log.error("Key must be binary (a 1 or a 0)");

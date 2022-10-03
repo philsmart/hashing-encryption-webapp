@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 
 import com.twelvemonkeys.imageio.stream.ByteArrayImageInputStream;
 
-import uk.ac.cardiff.nsa.hashenc.context.UserContext;
+import uk.ac.cardiff.nsa.hashenc.context.UserEncryptionContext;
 import uk.ac.cardiff.nsa.hashenc.controller.EncryptionController;
 
 /**
@@ -49,7 +49,7 @@ public class ImageEngine {
         log.info("ImageIO suports '{}'", Arrays.asList(ImageIO.getReaderFormatNames()));
     }
 
-    public void loadUserContext(final UserContext userContext) {
+    public void loadUserContext(final UserEncryptionContext userContext) {
         try {
             log.info("Does original image exist? {}", originalImage.exists());
             userContext.setRawOriginalImageBase64Encoded(convertImageToBase64(originalImage));
@@ -103,7 +103,7 @@ public class ImageEngine {
      * 
      * @param imageBytes the image body to save.
      */
-    public void convertAndReloadEncrypted(final byte[] imageBytes, final UserContext userContext) {
+    public void convertAndReloadEncrypted(final byte[] imageBytes, final UserEncryptionContext userContext) {
         try {
             final byte[] combinedWithHeader = addHeaderToBytes(imageBytes);
             final byte[] convertedImage = convertImageToFormatInMemory(combinedWithHeader, "JPEG");
@@ -121,7 +121,7 @@ public class ImageEngine {
      * 
      * @param imageBytes the image body to save.
      */
-    public void convertAndReloadDecrypted(final byte[] imageBytes, final UserContext userContext) {
+    public void convertAndReloadDecrypted(final byte[] imageBytes, final UserEncryptionContext userContext) {
         try {
             final byte[] combinedWithHeader = addHeaderToBytes(imageBytes);
             final byte[] convertedImage = convertImageToFormatInMemory(combinedWithHeader, "JPEG");
@@ -187,7 +187,7 @@ public class ImageEngine {
         return encodedfile;
     }
 
-    public void resetImageEncryption(final UserContext userContext) {
+    public void resetImageEncryption(final UserEncryptionContext userContext) {
         try {
             userContext.setImageBytes(convertImageToByteArray(imageToEncrypt));
             userContext.setRawEncryptedImageBase64Encoded(null);

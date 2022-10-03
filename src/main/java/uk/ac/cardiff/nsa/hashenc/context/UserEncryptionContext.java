@@ -7,9 +7,9 @@ import org.springframework.stereotype.Component;
 /**
  * A context to store state specific to a user
  */
-@Component("userContext")
+@Component("userEncryptionContext")
 @Scope("session")
-public class UserContext {
+public class UserEncryptionContext {
 
     /** The current encryption message or plaintext. */
     private String encMessage;
@@ -34,7 +34,7 @@ public class UserContext {
      */
     private byte[] imageBytes;
 
-    public UserContext() {
+    public UserEncryptionContext() {
         encMessage = "Text";
         encKey = "0";
         chosenEncFunction = "caesar-cipher";
