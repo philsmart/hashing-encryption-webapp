@@ -1,3 +1,5 @@
+// This is very flawed in the sense that the Counter (i in this case) should be combined with the nonce and
+// Encrypted (in some way we are not doing) before being XORed with the plaintext.
 var cipherTextAsBytes = function encrypt(messageAsBytes, keyAsBytes) {
 	if (messageAsBytes.length % keyAsBytes.length != 0) {
 		print("Key incompatible");

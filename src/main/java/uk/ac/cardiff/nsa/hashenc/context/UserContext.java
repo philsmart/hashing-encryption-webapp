@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Scope("session")
 public class UserContext {
 
-    /** The current encryption message. */
+    /** The current encryption message or plaintext. */
     private String encMessage;
 
     /** The current encryption key. */

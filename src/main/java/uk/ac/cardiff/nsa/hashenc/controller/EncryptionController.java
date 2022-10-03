@@ -31,6 +31,10 @@ import uk.ac.cardiff.nsa.hashenc.engine.ScriptHelper;
 
 /**
  * Basic Encryption controller. Is not thread-safe and will leak settings between users.
+ * 
+ * <p>
+ * Note, 'message' is used here in place of 'plaintext'.
+ * </p>
  */
 @Controller
 @SessionAttributes("userContext")
@@ -174,11 +178,7 @@ public class EncryptionController {
 
         // assume binary string and parse to long.
         final Long keyAsLong = Long.parseLong(key, 2);
-        log.info("Key in binary {}", HashEngine.longToBinaryString(keyAsLong));
-        log.info("Message in binary {}", HashEngine.stringToBinaryString(message));
-        // is wrong if 0 bytes in the middle!
-        log.info("Key in bytes: {}", EncryptionEngine.longToBytesIgnoreZeroBytes(keyAsLong));
-        log.info("Message in bytes {}", message.getBytes());
+        logKeyAndMessageInfo(keyAsLong, message);
         try {
             log.info("Encrypting the input text...");
             final Object encResult = ScriptHelper.runEncryptScript("cipherTextAsBytes", script,
@@ -235,6 +235,16 @@ public class EncryptionController {
 
         return "redirect:enc";
 
+    }
+
+    private void logKeyAndMessageInfo(final Long keyAsLong, final String message) {
+        if (log.isInfoEnabled()) {
+            log.info("Key in binary {}", HashEngine.longToBinaryString(keyAsLong));
+            log.info("Message in binary {}", HashEngine.stringToBinaryString(message));
+            // is wrong if 0 bytes in the middle!
+            log.info("Key in bytes: {}", EncryptionEngine.longToBytesIgnoreZeroBytes(keyAsLong));
+            log.info("Message in bytes {}", message.getBytes());
+        }
     }
 
 }
