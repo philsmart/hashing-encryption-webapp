@@ -22,12 +22,11 @@ import org.springframework.stereotype.Component;
 
 import com.twelvemonkeys.imageio.stream.ByteArrayImageInputStream;
 
+import uk.ac.cardiff.nsa.hashenc.context.UserContext;
 import uk.ac.cardiff.nsa.hashenc.controller.EncryptionController;
 
 /**
  * Only supports the image given.
- * 
- * Not thread-safe.
  */
 @Component
 public class ImageEngine {
@@ -45,37 +44,19 @@ public class ImageEngine {
 
     /** The original image to show before encryption. */
     private final Resource originalImage = new ClassPathResource("tux.jpg");
-    
-    	//TODO make below session scoped
-
-    /** The base64 version of the image to show before encryption. */
-    private String rawOriginalImageBase64Encoded;
-
-    /** The raw bytes of the encrypted imaged. */
-    private String rawEncryptedImageBase64Encoded;
-
-    /** The raw bytes of the decrypted imaged. */
-    private String rawDecryptedImageBase64Encoded;
-
-    /**
-     * The raw bytes of the uncompressed, unencrypted image, without the header, ready for encryption.
-     */
-    private byte[] imageBytes;
 
     public ImageEngine() {
         log.info("ImageIO suports '{}'", Arrays.asList(ImageIO.getReaderFormatNames()));
+    }
+
+    public void loadUserContext(final UserContext userContext) {
         try {
             log.info("Does original image exist? {}", originalImage.exists());
-            rawOriginalImageBase64Encoded = convertImageToBase64(originalImage);
-            imageBytes = convertImageToByteArray(imageToEncrypt);
+            userContext.setRawOriginalImageBase64Encoded(convertImageToBase64(originalImage));
+            userContext.setImageBytes(convertImageToByteArray(imageToEncrypt));
         } catch (final Exception e) {
             log.error("Could not load image", e);
         }
-
-    }
-
-    public String getRawDecryptedImageBase64Encoded() {
-        return rawDecryptedImageBase64Encoded;
     }
 
     /**
@@ -83,7 +64,7 @@ public class ImageEngine {
      * 
      * @param inImage the input image to convert
      * @param outImage the file resource to save the converted image to
-     * @param format the foramt to convert to e.g. "JPEG". 
+     * @param format the foramt to convert to e.g. "JPEG".
      * 
      * @throws IOException on error to load, convert, or save the file
      */
@@ -117,25 +98,16 @@ public class ImageEngine {
     }
 
     /**
-     * Get a live version of the loaded image (body only, no header) bytes.
-     * 
-     * @return the image body as bytes
-     */
-    public byte[] getImageBytes() {
-        return imageBytes;
-    }
-
-    /**
      * Combine the image body with the fixed image header, convert it in-memory to a JPEG and set the
      * rawEncryptedImageBase64Encoded value to the base64 of the JPEG version.
      * 
      * @param imageBytes the image body to save.
      */
-    public void convertAndReloadEncrypted(final byte[] imageBytes) {
+    public void convertAndReloadEncrypted(final byte[] imageBytes, final UserContext userContext) {
         try {
             final byte[] combinedWithHeader = addHeaderToBytes(imageBytes);
             final byte[] convertedImage = convertImageToFormatInMemory(combinedWithHeader, "JPEG");
-            rawEncryptedImageBase64Encoded = new String(Base64.encodeBase64(convertedImage), "UTF-8");
+            userContext.setRawEncryptedImageBase64Encoded(new String(Base64.encodeBase64(convertedImage), "UTF-8"));
 
         } catch (final Exception e) {
             log.warn("Could not save image", e);
@@ -149,11 +121,11 @@ public class ImageEngine {
      * 
      * @param imageBytes the image body to save.
      */
-    public void convertAndReloadDecrypted(final byte[] imageBytes) {
+    public void convertAndReloadDecrypted(final byte[] imageBytes, final UserContext userContext) {
         try {
             final byte[] combinedWithHeader = addHeaderToBytes(imageBytes);
             final byte[] convertedImage = convertImageToFormatInMemory(combinedWithHeader, "JPEG");
-            rawDecryptedImageBase64Encoded = new String(Base64.encodeBase64(convertedImage), "UTF-8");
+            userContext.setRawDecryptedImageBase64Encoded(new String(Base64.encodeBase64(convertedImage), "UTF-8"));
 
         } catch (final Exception e) {
             log.warn("Could not save image", e);
@@ -215,29 +187,11 @@ public class ImageEngine {
         return encodedfile;
     }
 
-    /**
-     * Get a the base64 encoded raw image unencrypted.
-     * 
-     * @return the original image base64 encoded.
-     */
-    public String getRawOriginalImageBase64Encoded() {
-        return rawOriginalImageBase64Encoded;
-    }
-
-    /**
-     * Get a the base64 encoded raw image encrypted.
-     * 
-     * @return the original image base64 encoded.
-     */
-    public String getRawEncryptedImageBase64Encoded() {
-        return rawEncryptedImageBase64Encoded;
-    }
-
-    public void resetImageToEncryptBytes() {
+    public void resetImageEncryption(final UserContext userContext) {
         try {
-            imageBytes = convertImageToByteArray(imageToEncrypt);
-            rawEncryptedImageBase64Encoded = null;
-            rawDecryptedImageBase64Encoded = null;
+            userContext.setImageBytes(convertImageToByteArray(imageToEncrypt));
+            userContext.setRawEncryptedImageBase64Encoded(null);
+            userContext.setRawDecryptedImageBase64Encoded(null);
         } catch (final Exception e) {
             log.error("Unable to reset tux image!", e);
         }
