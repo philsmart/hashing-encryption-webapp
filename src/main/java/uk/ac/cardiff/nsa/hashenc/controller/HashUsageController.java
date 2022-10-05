@@ -18,16 +18,16 @@ import uk.ac.cardiff.nsa.hashenc.engine.Dictionary;
 import uk.ac.cardiff.nsa.hashenc.engine.HashEngine;
 
 /**
- * Controller that demonstrates uses of hashing. 
+ * Controller that demonstrates uses of hashing.
  */
-@Controller 
+@Controller
 public class HashUsageController {
 
     /** Class logger. */
     private final Logger log = LoggerFactory.getLogger(HashUsageController.class);
 
     /** Dictionary of in-memory words. */
-    private Dictionary wordDictionary;
+    private final Dictionary wordDictionary;
 
     /** Constructor. */
     public HashUsageController() {
@@ -35,52 +35,70 @@ public class HashUsageController {
 
     }
 
-    @GetMapping("/hashing-usage") public String getHashingUsagePage(final Model model) {
+    @GetMapping("/hashing-usage")
+    public String getHashingUsagePage(final Model model) {
         return "hashing-usage";
     }
 
-    @PostMapping("/hash-password") public String hashPassword(@RequestParam("password") final String password,
-            final RedirectAttributes model) {
+    @PostMapping("/hash-password")
+    public String hashPassword(@RequestParam("password") final String password, final RedirectAttributes model) {
 
         final String hexHashedPassword = HashEngine.constructCryptographicHash(password);
         model.addFlashAttribute("hashed", hexHashedPassword);
         model.addFlashAttribute("hashedInt", new BigInteger(hexHashedPassword, 16).toString());
         return "redirect:hashing-usage";
     }
-    
-    @PostMapping("/hash-documents") public String hashDocuments(@RequestParam("docTwo") final String docTwo,
-            final RedirectAttributes model) {
+
+    @PostMapping("/hash-documents")
+    public String hashDocuments(@RequestParam("docTwo") final String docTwo, final RedirectAttributes model) {
 
         final String docTwoHash = HashEngine.constructCryptographicHash(docTwo);
         model.addFlashAttribute("docTwoHash", docTwoHash);
         model.addFlashAttribute("docTwo", docTwo);
-        model.addFlashAttribute("match", docTwoHash.equals("40d2c42d9c170b0699fd898acecf01df0ccd8efc70b294be17816956b265b968"));
+        model.addFlashAttribute("match",
+                docTwoHash.equals("40d2c42d9c170b0699fd898acecf01df0ccd8efc70b294be17816956b265b968"));
         return "redirect:hashing-usage";
     }
-    
-    @PostMapping("/hmac-document") public String hmacDocuments(@RequestParam("docOne") final String docOne,
-            @RequestParam("key") final String key,
+
+    @PostMapping("/hmac-document")
+    public String hmacDocuments(@RequestParam("docOne") final String docOne, @RequestParam("key") final String key,
             final RedirectAttributes model) {
 
-        final String docOneHmac = HashEngine.constructHmac(docOne,key);
+        final String docOneHmac = HashEngine.constructHmac(docOne, key);
         final String docOneHash = HashEngine.constructCryptographicHash(docOne);
-       
+
         model.addFlashAttribute("docOneHash", docOneHash);
         model.addFlashAttribute("docOneHmac", docOneHmac);
         return "redirect:hashing-usage";
     }
 
-    @PostMapping("/crack-password") public String crackPassword(@RequestParam("hex-hash") final String hexHash,
+    /**
+     * Finds a matching hash from the words in the dictionary. Returns when the first is found to speedup the search.
+     * 
+     * @param hexHash the hex of the hash to find
+     * @param attempts the number of words to try hashing
+     * @param model the model
+     * @return a redirect to the hashing-usage page
+     */
+    @PostMapping("/crack-password")
+    public String crackPassword(@RequestParam("hex-hash") final String hexHash,
             @RequestParam("attempts") final int attempts, final RedirectAttributes model) {
 
-        List<String> preimages = new ArrayList<String>();
-        List<String> words = wordDictionary.getRandomUniqueWords(attempts);
-        log.debug("Generated {} words",words.size());
+        if (attempts >= wordDictionary.getNumberOfWordsInDictionary()) {
+            model.addFlashAttribute("preimagesDict",
+                    ("Max Attempts = " + wordDictionary.getNumberOfWordsInDictionary()));
+            return "redirect:hashing-usage";
+        }
+
+        final List<String> preimages = new ArrayList<>();
+        final List<String> words = wordDictionary.getRandomUniqueWords(attempts);
+        log.debug("Generated {} words", words.size());
         for (int i = 0; i < attempts; i++) {
-            String wordHash = HashEngine.constructCryptographicHash(words.get(i));
-          
+            final String wordHash = HashEngine.constructCryptographicHash(words.get(i));
+
             if (wordHash.equals(hexHash)) {
                 preimages.add(words.get(i));
+                break;
             }
         }
         log.info("Pre-images dict: {}", preimages);

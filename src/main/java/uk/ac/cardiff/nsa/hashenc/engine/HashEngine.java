@@ -29,122 +29,118 @@ public class HashEngine {
 
     public static BucketsWrapper hashToBuckets(final List<String> messages, final String script, final int noBuckets) {
 
-        //last bucket is the overflow bucket.
-        int[] buckets = new int[noBuckets+1];
-        //cheat here to find collisions as examples by using an actual hashmap
-        HashMap<Integer,String> collisions = new HashMap<Integer,String>();
-        List<String[]> exampleCollisions = new ArrayList<String[]>();
+        // last bucket is the overflow bucket.
+        final int[] buckets = new int[noBuckets + 1];
+        // cheat here to find collisions as examples by using an actual hashmap
+        final HashMap<Integer, String> collisions = new HashMap<>();
+        final List<String[]> exampleCollisions = new ArrayList<>();
         for (final String message : messages) {
             try {
-                Object hashResult = ScriptHelper.runScript(script, message);
-                log.debug("Input({}) = Hash({}), {}", message, hashResult,hashResult.getClass());
-                
-                if (hashResult instanceof Integer) {
-                    int hashInt = (Integer)hashResult;
+                final Object hashResult = ScriptHelper.runScript(script, message);
+                log.debug("Input({}) = Hash({}), {}", message, hashResult, hashResult.getClass());
 
-                    if (hashInt >=0 && hashInt < noBuckets) {                       
+                if (hashResult instanceof Integer) {
+                    final int hashInt = (Integer) hashResult;
+
+                    if ((hashInt >= 0) && (hashInt < noBuckets)) {
                         buckets[hashInt]++;
                         if (collisions.containsKey(hashInt)) {
-                            String[] example = new String[] {collisions.get(hashInt),message};
+                            final String[] example = new String[] {collisions.get(hashInt), message};
                             exampleCollisions.add(example);
                         } else {
                             collisions.put(hashInt, message);
                         }
                     } else {
-                        log.debug("Hash it outside output range! {}",hashInt);
-                        buckets[buckets.length-1]++;
-                        if (collisions.containsKey(buckets.length-1)) {
-                            String[] example = new String[] {collisions.get(buckets.length-1),message};
+                        log.debug("Hash it outside output range! {}", hashInt);
+                        buckets[buckets.length - 1]++;
+                        if (collisions.containsKey(buckets.length - 1)) {
+                            final String[] example = new String[] {collisions.get(buckets.length - 1), message};
                             exampleCollisions.add(example);
                         } else {
-                            collisions.put(buckets.length-1, message);
+                            collisions.put(buckets.length - 1, message);
                         }
                     }
-                    
+
                 }
-                //likely too big by this point. Lots of lossy conversion here.
+                // likely too big by this point. Lots of lossy conversion here.
                 if (hashResult instanceof Double) {
-                    Double hashDbl = (Double) hashResult;
-                    //log.debug("HashInt {}",hashInt);
-                    if (hashDbl.intValue() >=0 && hashDbl.intValue() < noBuckets) {                       
+                    final Double hashDbl = (Double) hashResult;
+                    // log.debug("HashInt {}",hashInt);
+                    if ((hashDbl.intValue() >= 0) && (hashDbl.intValue() < noBuckets)) {
                         buckets[hashDbl.intValue()]++;
                     } else {
-                        log.debug("Hash it outside output range! {}",hashDbl);
-                        buckets[buckets.length-1]++;
+                        log.debug("Hash it outside output range! {}", hashDbl);
+                        buckets[buckets.length - 1]++;
                     }
-                    
+
                 }
-                
+
             } catch (final NoSuchMethodException | ScriptException e) {
-                //mostly suppress the error
+                // mostly suppress the error
                 log.error("Could not generate hash for message '{}'", message, e.getMessage());
             }
-        } 
-        
+        }
+
         return new BucketsWrapper(buckets, exampleCollisions);
 
     }
-    
+
     public static int numberOfCollisions(final int[] buckets) {
         int totalCollisions = 0;
         for (int i = 0; i < buckets.length; i++) {
-            if (buckets[i]>1) {
-                //record collision, ignore first in bucket
-                totalCollisions+=buckets[i]-1;
+            if (buckets[i] > 1) {
+                // record collision, ignore first in bucket
+                totalCollisions += buckets[i] - 1;
             }
         }
         return totalCollisions;
     }
-    
+
     public static String intToHex(final int diffusedHash) {
         return Integer.toHexString(diffusedHash);
     }
-    
+
     public static String doubleToHex(final double diffusedHash) {
         return Double.toHexString(diffusedHash);
     }
-    
-       
+
     public static String stringToBinaryString(final String message) {
-        StringBuilder builder = new StringBuilder();
+        final StringBuilder builder = new StringBuilder();
         for (final byte b : message.getBytes()) {
             builder.append("[").append(byteToBinary(b)).append("]");
         }
         return builder.toString();
     }
-    
+
     public static String intToBinaryString(final int diffusedHash) {
-     
-        StringBuilder builder = new StringBuilder();
+
+        final StringBuilder builder = new StringBuilder();
         for (final byte b : toByteArray(diffusedHash)) {
             builder.append("[").append(byteToBinary(b)).append("]");
         }
         return builder.toString();
     }
-    
+
     public static String doubeToBinaryString(final double diffusedHash) {
-        byte [] bytes = ByteBuffer.allocate(8).putDouble(diffusedHash).array();
-        StringBuilder builder = new StringBuilder();
+        final byte[] bytes = ByteBuffer.allocate(8).putDouble(diffusedHash).array();
+        final StringBuilder builder = new StringBuilder();
         for (final byte b : bytes) {
             builder.append("[").append(byteToBinary(b)).append("]");
         }
         return builder.toString();
     }
-    
+
     public static String longToBinaryString(final long diffusedHash) {
-        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+        final ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
         buffer.putLong(diffusedHash);
-        //will always produce 8 bytes as that is the max size of a long 64 bit.
-        byte[] bytes = buffer.array();
-        StringBuilder builder = new StringBuilder();
+        // will always produce 8 bytes as that is the max size of a long 64 bit.
+        final byte[] bytes = buffer.array();
+        final StringBuilder builder = new StringBuilder();
         for (final byte b : bytes) {
             builder.append("[").append(byteToBinary(b)).append("]");
         }
         return builder.toString();
     }
-    
-   
-    
 
     /**
      * Generate a sha256 non-cryptographic hash for a string.
@@ -161,12 +157,12 @@ public class HashEngine {
             return Hex.encodeHexString(encodedhash);
 
         } catch (final NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            log.error("Error producing crypographic hash", e);
             return null;
         }
 
     }
-    
+
     /**
      * Return a bit string representation of the byte argument.
      * 
@@ -178,25 +174,21 @@ public class HashEngine {
         return String.format("%8s", Integer.toBinaryString((b + 256) % 256)).replace(' ', '0');
 
     }
-    
-    public static double clusterMeasure(final int[] buckets, int elementsInHash) {
-        double m = buckets.length;
-        double n = elementsInHash;
+
+    public static double clusterMeasure(final int[] buckets, final int elementsInHash) {
+        final double m = buckets.length;
+        final double n = elementsInHash;
 
         double elementTotal = 0;
-        for (int element : buckets) {
-            elementTotal += element * (element+1);
+        for (final int element : buckets) {
+            elementTotal += element * (element + 1);
         }
-        elementTotal = elementTotal -1;
-        return (elementTotal * m / (n * (n + 2 * m -1)));
+        elementTotal = elementTotal - 1;
+        return ((elementTotal * m) / (n * ((n + (2 * m)) - 1)));
     }
-    
-    public static byte[] toByteArray(int value) {
-        return new byte[] {
-                (byte)(value >> 24),
-                (byte)(value >> 16),
-                (byte)(value >> 8),
-                (byte)value};
+
+    public static byte[] toByteArray(final int value) {
+        return new byte[] {(byte) (value >> 24), (byte) (value >> 16), (byte) (value >> 8), (byte) value};
     }
 
     /**
@@ -209,14 +201,14 @@ public class HashEngine {
     public static String constructHmac(final String docOne, final String key) {
         try {
             final byte[] byteKey = key.getBytes(StandardCharsets.UTF_8);
-            Mac sha512Hmac = Mac.getInstance("HmacSHA256");
-            SecretKeySpec keySpec = new SecretKeySpec(byteKey, ("HmacSHA256"));
+            final Mac sha512Hmac = Mac.getInstance("HmacSHA256");
+            final SecretKeySpec keySpec = new SecretKeySpec(byteKey, ("HmacSHA256"));
             sha512Hmac.init(keySpec);
-            byte[] macData = sha512Hmac.doFinal(docOne.getBytes(StandardCharsets.UTF_8));
+            final byte[] macData = sha512Hmac.doFinal(docOne.getBytes(StandardCharsets.UTF_8));
             return new String(Hex.encodeHex(macData));
         } catch (final NoSuchAlgorithmException | InvalidKeyException e) {
             return null;
-        } 
+        }
     }
 
 }
