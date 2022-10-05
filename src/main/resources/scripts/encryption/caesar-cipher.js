@@ -1,3 +1,9 @@
+// Note, a Caesar cipher would not normally operate over a generic set of bytes like
+// it is here. So this is not a true Caesar Cipher. It simply shifts (increments) the 
+// number corresponding to the byte by the shift, and does not wrap around if that byte no 
+// longer represents an alphanumeric e.g. Z plus a shift of 1 will give the UTF-8 (and ASCII) 
+// character of '{' and not 'a' as it should.
+
 var cipherTextAsBytes = function encrypt(messageAsBytes, keyAsBytes) {
 	if (keyAsBytes.length > 1) {
 		print("Caesar cipher key should be 1 byte");

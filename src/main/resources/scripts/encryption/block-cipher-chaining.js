@@ -9,8 +9,8 @@ var cipherTextAsBytes = function encrypt(messageAsBytes, keyAsBytes) {
 	}
 	// 8 bit keys, so fix the block to 8 bits or 1 byte, so byte for byte
 	var blockSize = 1;
-	// IV is a byte between 0 and 255 (00000000 and 11111111). The IV MUST normally
-	// Change for each enc operation, so this is flawed.
+	// Here, the IV is a byte between 0 and 255 (00000000 and 11111111). The IV MUST normally
+	// be random, and change for each enc operation, so this is flawed.
 	var iv = 100;
 	for (var i = 0; i < messageAsBytes.length; i = i + blockSize) {
 		if (i == 0){

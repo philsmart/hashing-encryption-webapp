@@ -3,8 +3,10 @@ package uk.ac.cardiff.nsa.hashenc.controller;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import javax.script.ScriptException;
@@ -30,7 +32,7 @@ import uk.ac.cardiff.nsa.hashenc.engine.ImageEngine;
 import uk.ac.cardiff.nsa.hashenc.engine.ScriptHelper;
 
 /**
- * Basic Encryption controller. Is not thread-safe and will leak settings between users.
+ * Basic Encryption controller.
  * 
  * <p>
  * Note, 'message' is used here in place of 'plaintext'.
@@ -44,12 +46,12 @@ public class EncryptionController {
     private final Logger log = LoggerFactory.getLogger(EncryptionController.class);
 
     /** A fixed list of encryption script resources. */
-    private final Map<String, Resource> encryptionScriptResources = Map.of("caesar-cipher",
-            new ClassPathResource("scripts/encryption/caesar-cipher.js"), "one-time-pad",
-            new ClassPathResource("scripts/encryption/one-time-pad.js"), "basic(none)",
-            new ClassPathResource("scripts/encryption/basic.js"), "block-cipher",
-            new ClassPathResource("scripts/encryption/block-cipher.js"), "block-cipher-chaining (Experimental)",
-            new ClassPathResource("scripts/encryption/block-cipher-chaining.js"), "block-cipher-counter (Experimental)",
+    private final Map<String, Resource> encryptionScriptResources = Map.of("(a) caesar-cipher",
+            new ClassPathResource("scripts/encryption/caesar-cipher.js"), "(c) one-time-pad",
+            new ClassPathResource("scripts/encryption/one-time-pad.js"), "(z) basic (none)",
+            new ClassPathResource("scripts/encryption/basic.js"), "(b) block-cipher",
+            new ClassPathResource("scripts/encryption/block-cipher.js"), "(z) block-cipher-chaining (Experimental)",
+            new ClassPathResource("scripts/encryption/block-cipher-chaining.js"), "(z) block-cipher-counter (Experimental)",
             new ClassPathResource("scripts/encryption/block-cipher-counter.js"));
 
     /**
@@ -65,11 +67,12 @@ public class EncryptionController {
     public EncryptionController() {
 
         // Load the scripts
-        encryptionScripts = new HashMap<>(encryptionScriptResources.size());
+    	encryptionScripts = new TreeMap<>();
         for (final Map.Entry<String, Resource> resource : encryptionScriptResources.entrySet()) {
             final String resourceAsScript = ScriptHelper.loadScriptResourceToString(resource.getValue());
             encryptionScripts.put(resource.getKey(), resourceAsScript);
         }
+
     }
 
     /**

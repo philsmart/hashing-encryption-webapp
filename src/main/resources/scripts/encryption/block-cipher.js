@@ -6,8 +6,7 @@ var cipherTextAsBytes = function encrypt(messageAsBytes, keyAsBytes){
    for (var i=0; i<messageAsBytes.length; i=i+keyAsBytes.length) {
 		// Usually much more happens during each 'block' enc. step e.g. see SP networks
         for (var j = 0; j < keyAsBytes.length; j++){
-           var b = messageAsBytes[i+j] ^ keyAsBytes[j];        
-           messageAsBytes[i+j] = b;
+           messageAsBytes[i+j] = messageAsBytes[i+j] ^ keyAsBytes[j];        
         }
     }    
     return messageAsBytes;
@@ -20,8 +19,7 @@ var decodedMessageAsBytes = function decrypt(encryptedMessageAsBytes, keyAsBytes
    }
    for (var i=0; i<encryptedMessageAsBytes.length; i=i+keyAsBytes.length) {
         for (var j = 0; j < keyAsBytes.length; j++){
-           var decryptedByte = encryptedMessageAsBytes[i+j] ^ keyAsBytes[j]; 
-           decryptedArray[i+j] = decryptedByte;    
+           decryptedArray[i+j] = encryptedMessageAsBytes[i+j] ^ keyAsBytes[j];     
         }
     } 
    return decryptedArray;

@@ -95,12 +95,12 @@ down here. That's all over the second we ride up "Troy's bucket".</textarea>
 				</tr>
 				
 				<tr>
-					<td><span>Digest:sha256: 40d2c42d9c170b0699fd898acecf01df0ccd8efc70b294be17816956b265b968</span></td>
-					<td><span th:text="${docTwoHash}"></span></td>
+					<td><span>Digest: 40d2c42d9c170b0699fd898acecf01df0ccd8efc70b294be17816956b265b968</span></td>
+					<td><span>Digest:</span><span th:text="${docTwoHash}"></span></td>
 				</tr>
 				<tr>
 					<td th:if="${match!=null}"><p>
-							Has the messages integrity been preserved? <span
+							Has the message integrity been preserved? <span
 								th:if="${!match}">no sorry</span> <span th:if="${match}">yes!</span>
 						</p></td>
 

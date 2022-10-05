@@ -37,7 +37,7 @@ public class UserEncryptionContext {
     public UserEncryptionContext() {
         encMessage = "Text";
         encKey = "0";
-        chosenEncFunction = "caesar-cipher";
+        chosenEncFunction = "(a) caesar-cipher";
     }
 
     public boolean isImageInitialised() {
