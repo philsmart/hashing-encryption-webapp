@@ -31,8 +31,7 @@ jobs:
     - name: Build with Gradle
       uses: gradle-build-action@v2
       with:
-          gradle-version: 7.5.1
-      with:
+        gradle-version: 7.5.1
         arguments: build
     - name: Upload jar artifact
       uses: actions/upload-artifact@v2
