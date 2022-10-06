@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+import javax.script.ScriptEngineFactory;
+import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -124,16 +126,16 @@ public class HashingController {
                 final int hashInt = (Integer) hashResult;
                 model.addFlashAttribute("resultHex", HashEngine.intToHex(hashInt));
                 model.addFlashAttribute("resultBinary", HashEngine.intToBinaryString(hashInt));
+                model.addFlashAttribute("result", hashInt);
 
             }
             if (hashResult instanceof Double) {
-                final double hashDbl = (Double) hashResult;
-                model.addFlashAttribute("resultHex", HashEngine.doubleToHex(hashDbl));
-                model.addFlashAttribute("resultBinary", HashEngine.doubeToBinaryString(hashDbl));
-
+                int hashDblAsInt = ((Double) hashResult).intValue();                
+                model.addFlashAttribute("resultHex", HashEngine.intToHex(hashDblAsInt));
+                model.addFlashAttribute("resultBinary", HashEngine.intToBinaryString(hashDblAsInt));
+                model.addFlashAttribute("result", hashDblAsInt);
             }
-
-            model.addFlashAttribute("result", hashResult);
+            
             log.info("Result of script: {}, {}", hashResult, hashResult.getClass());
         } catch (NoSuchMethodException | ScriptException e) {
             log.error("Could not run Script", e);
@@ -196,6 +198,12 @@ public class HashingController {
                         preImage.add(randomString);
                     }
                 }
+                if (hashResult instanceof Double) {
+                    final int hashInt = ((Double) hashResult).intValue();
+                    if (hashInt == hash) {
+                    	preImage.add(randomString);
+                    }
+                }
             }
             // should only really be a single preimage - so this is just for demo.
             log.info("Preimages: {}", preImage);
@@ -248,7 +256,14 @@ public class HashingController {
             @RequestParam("find-second-preimage-attempts-dict") final int attempts, final RedirectAttributes model,
             @ModelAttribute("userHashingContext") final UserHashingContext userCtx) {
         try {
-            final int hashOfGivenInput = (Integer) ScriptHelper.runScript(userCtx.getScript(), message);
+        	Object hashValueObj = ScriptHelper.runScript(userCtx.getScript(), message);
+        	int hashOfGivenInput = 0;
+        	if (hashValueObj instanceof Double) {
+        		hashOfGivenInput = ((Double) hashValueObj).intValue();
+        	}
+        	if (hashValueObj instanceof Integer) {
+        		hashOfGivenInput = ((Integer) hashValueObj);
+        	}
 
             final List<String> secondPreimages = new ArrayList<>();
             final List<String> words = wordDictionary.getRandomUniqueWords(attempts);
@@ -260,9 +275,16 @@ public class HashingController {
                         secondPreimages.add(words.get(i));
                     }
                 }
+                if (hashResult instanceof Double) {
+                    final int hashInt = (Integer) ((Double) hashResult).intValue();
+                    if (hashInt == hashOfGivenInput) {
+                        secondPreimages.add(words.get(i));
+                    }
+                }
             }
             log.info("Second preimages dict: {}", secondPreimages);
             model.addFlashAttribute("secondPreimagesDict", secondPreimages);
+        	
         } catch (NoSuchMethodException | ScriptException e) {
             log.error("Could not run Script", e);
         }

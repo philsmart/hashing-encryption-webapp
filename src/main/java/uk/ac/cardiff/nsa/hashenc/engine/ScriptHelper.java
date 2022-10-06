@@ -18,7 +18,7 @@ import org.springframework.util.FileCopyUtils;
 public class ScriptHelper {
     
     public static Object runScript(final String script, final String message) throws ScriptException, NoSuchMethodException {
-        final ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+        final ScriptEngine engine = new ScriptEngineManager().getEngineByName("Nashorn");
         engine.eval(new StringReader(script));
         Invocable invocable = (Invocable) engine;
 
@@ -37,7 +37,7 @@ public class ScriptHelper {
     //FIXME no need for two methods here.
     public static Object runEncryptScript(final String varName, final String script, final Object... params) 
     		throws ScriptException, NoSuchMethodException {
-        final ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+        final ScriptEngine engine = new ScriptEngineManager().getEngineByName("Nashorn");
         engine.eval(new StringReader(script));
         Invocable invocable = (Invocable) engine;
 

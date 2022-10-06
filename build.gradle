@@ -21,6 +21,8 @@ dependencies {
 	implementation group: 'com.twelvemonkeys.imageio', name: 'imageio-jpeg', version: '3.8.3'
 	implementation group: 'com.twelvemonkeys.imageio', name: 'imageio-pnm', version: '3.8.3'
 	implementation group: 'commons-io', name: 'commons-io', version: '2.6'
+	// https://mvnrepository.com/artifact/org.openjdk.nashorn/nashorn-core
+	implementation group: 'org.openjdk.nashorn', name: 'nashorn-core', version: '15.3'
 	
 	
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
