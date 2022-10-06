@@ -6,7 +6,7 @@ plugins {
 
 group = 'uk.ac.cardiff.nsa'
 version = '1.0.0-SNAPSHOT'
-sourceCompatibility = '11'
+sourceCompatibility = '17'
 
 repositories {
 	mavenCentral()
