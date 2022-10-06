@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'uk.ac.cardiff.nsa'
-version = '1.0.0-SNAPSHOT'
+version = '1.2.1-SNAPSHOT'
 sourceCompatibility = '17'
 
 repositories {
