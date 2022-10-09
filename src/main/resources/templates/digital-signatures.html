@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Hashing And Encryption</title>
+<link th:href="@{/styles/style.css}" rel="stylesheet" />
+</head>
+<body>
+	<header id="header-menu">
+		<ul>
+			<li><a href="/hashing">Hashing</a></li>
+			<li><a href="/hashing-usage">Hashing Usage</a></li>
+			<li><a href="/enc">Encryption</a></li>
+			<li><a class="active" href="/sig">Digital Signatures</a></li>
+		</ul>
+	</header>
+
+	<div id="game-container">
+		<h3>Creating an authentication tag (MAC)</h3>
+
+		<p>Input the data or payload of your message</p>
+		<form th:action="@{/hmac-payload}" method="post"
+			style="display: inline">
+			HEADER ('alg' is not 'live/used' yet):
+			<div>
+				<textarea id="header" name="header" rows="6" cols="50"
+					th:inline="text">[[${header}]]</textarea>
+			</div>
+			PAYLOAD:
+			<div>
+				<textarea id="payload" name="payload" rows="6" cols="50"
+					th:inline="text">[[${payload}]]</textarea>
+			</div>
+			
+			SIGNATURE:<span th:if="${verified}" style="padding: 5px; color: green">VALID</span> <span th:if="${!verified}"
+					style="padding: 5px; color: red">INVALID</span>
+	
+			<div>
+
+				<textarea id="existingMac" name="existingMac" rows="3" cols="50" th:if="${verified}"
+					th:inline="text" style="background-color:#d6ffd6">[[${existingMac}]]</textarea>
+					<textarea id="existingMac" name="existingMac" rows="3" cols="50" th:if="${!verified}"
+					th:inline="text" style="background-color:#ffcece">[[${existingMac}]]</textarea>
+			</div>
+			
+			<button type="submit" name="action" value="check" style="width: 25%">Verify</button>
+			<hr />
+			<h3>Create a new MAC</h3>
+			<p>
+				<label for="key">Key:</label><input id="key" name="key"
+					th:value="${key}" />
+				<button type="submit" name="action" value="compute" style="width: 25%">Compute</button>
+			</p>
+
+		</form>
+		MAC: <span th:text="${mac}"></span>
+		<p>JWT Encoded (As an example):</p>
+		<p>
+
+			<textarea th:if="${jwtCompact}" id="jwtCompact" name="jwtCompact"
+				rows="4" cols="70" th:inline="text">[[${jwtCompact}]]</textarea>
+		</p>
+	</div>
+
+
+</body>
+</html>

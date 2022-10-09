@@ -210,5 +210,25 @@ public class HashEngine {
             return null;
         }
     }
+    
+    /**
+     * Construct a HMAC based on the SHA256 hashing algorithm.
+     * 
+     * @param docOne the document to generate a HMAC for
+     * @param key the key to use with the hash to generate the HMAC
+     * @return the HMAC represented as bytes.
+     */
+    public static byte[] constructHmacAsBytes(final String docOne, final String key) {
+        try {
+            final byte[] byteKey = key.getBytes(StandardCharsets.UTF_8);
+            final Mac sha512Hmac = Mac.getInstance("HmacSHA256");
+            final SecretKeySpec keySpec = new SecretKeySpec(byteKey, ("HmacSHA256"));
+            sha512Hmac.init(keySpec);
+            final byte[] macData = sha512Hmac.doFinal(docOne.getBytes(StandardCharsets.UTF_8));
+            return macData;
+        } catch (final NoSuchAlgorithmException | InvalidKeyException e) {
+            return null;
+        }
+    }
 
 }
