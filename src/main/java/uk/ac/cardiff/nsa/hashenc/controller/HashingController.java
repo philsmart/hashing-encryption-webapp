@@ -153,7 +153,14 @@ public class HashingController {
             @RequestParam("find-second-preimage-attempts") final int attempts, final RedirectAttributes model,
             @ModelAttribute("userHashingContext") final UserHashingContext userCtx) {
         try {
-            final int hashOfGivenInput = (Integer) ScriptHelper.runScript(userCtx.getScript(), message);
+        	Object hashValueObj = ScriptHelper.runScript(userCtx.getScript(), message);
+        	int hashOfGivenInput = 0;
+        	if (hashValueObj instanceof Double) {
+        		hashOfGivenInput = ((Double) hashValueObj).intValue();
+        	}
+        	if (hashValueObj instanceof Integer) {
+        		hashOfGivenInput = ((Integer) hashValueObj);
+        	}
 
             final List<String> secondPreimages = new ArrayList<>();
             for (int i = 0; i < attempts; i++) {
